@@ -1,0 +1,14 @@
+<div class="mx-auto max-w-4xl"><%= link_to "← Team schedule", team_schedule_path, class: "text-sm text-stone-500" %>
+<h1 class="mb-3 mt-6 text-3xl font-medium"><%= @stylist.name %>’s week.</h1>
+<p class="mb-6 text-sm text-stone-500">Set the usual weekly hours and an optional daily break. Dated shifts and time off take priority. Changes that conflict with future bookings cannot be saved.</p>
+<div class="calendar-panel p-6"><%= render "shared/errors", record: @stylist %>
+<%= render "shared/schedule_conflicts", bookings: @stylist.working_days.flat_map(&:conflicting_appointments).sort_by(&:starts_at) %>
+<%= form_with model: @stylist do |form| %>
+  <div class="space-y-5"><%= form.fields_for :working_days, @stylist.working_days.sort_by { |day| (day.weekday + 6) % 7 } do |day| %>
+    <fieldset class="rounded-xl border border-stone-200 p-4"><legend class="px-2 font-semibold"><%= Date::DAYNAMES[day.object.weekday] %></legend>
+      <div class="mb-3 flex items-center gap-2"><%= day.check_box :closed, class: "!w-auto" %><%= day.label :closed, "Day off", class: "!mb-0" %></div>
+      <div class="grid grid-cols-2 gap-3 md:grid-cols-4"><div><%= day.label :opens_at, "Start" %><%= day.time_field :opens_at, required: true %></div><div><%= day.label :closes_at, "Finish" %><%= day.time_field :closes_at, required: true %></div><div><%= day.label :break_starts_at, "Break starts" %><%= day.time_field :break_starts_at %></div><div><%= day.label :break_ends_at, "Break ends" %><%= day.time_field :break_ends_at %></div></div>
+    </fieldset>
+  <% end %></div>
+  <%= form.submit "Save working hours", class: "button button-primary mt-6 cursor-pointer" %>
+<% end %></div></div>

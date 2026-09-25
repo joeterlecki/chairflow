@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title><%= content_for(:title) || application_page_title %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="application-name" content="Chairflow">
+    <meta name="theme-color" content="#344d42">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <meta name="turbo-refresh-method" content="morph">
+    <meta name="turbo-refresh-scroll" content="preserve">
+    <meta name="turbo-cache-control" content="no-cache">
+    <%= yield :head %>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+    <%= Sentry.get_trace_propagation_meta.html_safe %>
+  </head>
+  <body>
+    <header class="site-header">
+      <%= link_to root_path, class: "brand", aria: { label: "Chairflow home" } do %><span class="brand-mark" aria-hidden="true">c.</span> chairflow <span class="brand-subtitle">YOUR SALON, IN RHYTHM.</span><% end %>
+      <% if current_user %>
+        <nav aria-label="Main navigation" class="flex flex-wrap items-center gap-5 text-sm text-stone-500"><%= link_to "Calendar", root_path %><%= link_to "Team schedule", team_schedule_path %><%= link_to "Services", services_path %><%= link_to "Clients", clients_path %><%= button_to "Sign out", logout_path, method: :delete, class: "cursor-pointer border-l border-stone-200 pl-5 hover:text-stone-800", form: { data: { turbo_frame: "_top" } } %></nav>
+      <% else %>
+        <span class="text-sm text-stone-500">A little space for a beautiful day.</span>
+      <% end %>
+    </header>
+    <main class="mx-auto max-w-[1600px] px-4 py-8 md:px-10 md:py-12">
+      <% if notice %><div role="status" class="notice mb-6"><%= notice %></div><% end %>
+      <%= yield %>
+    </main>
+    <%= turbo_frame_tag "booking_details" %>
+  </body>
+</html>

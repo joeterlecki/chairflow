@@ -1,0 +1,32 @@
+<div class="mx-auto max-w-6xl" data-controller="availability" data-availability-url-value="<%= availability_appointments_path %>" data-availability-appointment-id-value="<%= @appointment.id %>">
+  <%= link_to "← Back to the calendar", back_to_calendar_path(@appointment), class: "text-sm text-stone-500 hover:text-stone-900" %>
+  <p class="eyebrow mt-8"><%= @appointment.persisted? ? "EDIT APPOINTMENT" : "NEW APPOINTMENT" %></p>
+  <h1 class="mb-8 mt-2 text-3xl font-medium tracking-tight"><%= title %></h1>
+  <div class="grid items-start gap-6 lg:grid-cols-2">
+  <div class="calendar-panel p-6 md:p-8">
+    <%= form_with model: @appointment, class: "space-y-6" do |form| %>
+      <%= hidden_field_tag :stylist_id, params[:stylist_id] %>
+      <%= hidden_field_tag :calendar_view, params[:calendar_view] %>
+      <% if @appointment.errors.any? %>
+        <div role="alert" class="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><p class="mb-2 font-semibold">Let’s fix a couple of things.</p><ul class="list-inside list-disc"><% @appointment.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div>
+      <% end %>
+      <div><%= form.label :client_id, "Client" %><%= form.collection_select :client_id, @clients, :id, :label, { include_blank: "Choose an existing client" } %><p class="field-hint">Update existing contact details in <%= link_to "Clients", clients_path, class: "underline", data: { turbo_confirm: "Leave this appointment form? Unsaved changes will be lost." } %>.</p></div>
+      <div><%= form.label :new_client_name, "Or add a new client" %><%= form.text_field :new_client_name, value: params.dig(:appointment, :new_client_name), placeholder: "Full name", maxlength: 100 %><p class="field-hint">A new name creates a client and overrides the selection above.</p></div>
+      <div class="grid gap-4 sm:grid-cols-2"><div><%= form.label :new_client_email, "New client email (optional)" %><%= form.email_field :new_client_email, value: params.dig(:appointment, :new_client_email), maxlength: 254 %></div><div><%= form.label :new_client_phone, "New client phone (optional)" %><%= form.telephone_field :new_client_phone, value: params.dig(:appointment, :new_client_phone), maxlength: 30 %></div></div>
+      <div><%= form.label :new_client_preferred_stylist_id, "New client’s preferred stylist" %><%= form.select :new_client_preferred_stylist_id, [["Appointment stylist (default)", "booking_stylist"], ["No preference", ""]] + @stylists.map { |stylist| [stylist.name, stylist.id] }, { selected: params.fetch(:appointment, {}).fetch(:new_client_preferred_stylist_id, "booking_stylist") } %><p class="field-hint">Only applies when adding a new client. Existing preferences can be changed in Clients.</p></div>
+      <div class="grid gap-6 sm:grid-cols-2">
+        <div><%= form.label :stylist_id, "Stylist" %><%= form.collection_select :stylist_id, @stylists, :id, :name, { prompt: "Choose a stylist" }, required: true, data: { availability_target: "stylist", action: "change->availability#refresh" } %></div>
+        <div><%= form.label :service %><%= form.select :service, @services.map { |service| [ service.name, service.name, { "data-duration": service.default_duration } ] }, {}, required: true, data: { action: "change->availability#serviceChanged" } %></div>
+        <div><%= form.label :starts_at, "Date & time" %><%= form.datetime_local_field :starts_at, required: true, data: { availability_target: "start", action: "change->availability#refresh" } %><p class="field-hint">Enter a time or choose an open slot in the day planner.</p></div>
+        <div><%= form.label :duration_minutes, "Duration" %><%= form.select :duration_minutes, Appointment::DURATIONS.map { |minutes| [ "#{minutes} minutes", minutes ] }, {}, data: { availability_target: "duration", action: "change->availability#refresh" } %><p class="field-hint">Changing service applies its default. Adjust for this visit if needed.</p></div>
+      </div>
+      <div><%= form.label :notes, "Notes (optional)" %><%= form.text_area :notes, rows: 3, maxlength: 2000, placeholder: "Anything to remember for this visit…" %></div>
+      <div class="flex items-center gap-4 border-t border-stone-200 pt-6"><%= form.submit @appointment.persisted? ? "Save changes" : "Book appointment", class: "button button-primary cursor-pointer" %><%= link_to "Never mind", back_to_calendar_path(@appointment), class: "text-sm text-stone-500" %></div>
+    <% end %>
+    <% if @appointment.persisted? %><div class="mt-6 border-t border-stone-200 pt-5"><%= button_to "Cancel appointment", appointment_path(@appointment, stylist_id: params[:stylist_id], calendar_view: params[:calendar_view]), method: :delete, class: "text-sm text-red-700 underline underline-offset-4", form: { data: { turbo_confirm: "Cancel this appointment? This cannot be undone." } } %></div><% end %>
+  </div>
+  <aside aria-label="Day availability">
+    <%= render "availability", availability: DayAvailability.new(stylist: @appointment.stylist, starts_at: @appointment.starts_at || Time.current, duration: Appointment::DURATIONS.include?(@appointment.duration_minutes) ? @appointment.duration_minutes : 60, excluding_id: @appointment.id) %>
+  </aside>
+  </div>
+</div>

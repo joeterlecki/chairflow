@@ -1,0 +1,18 @@
+<div class="mx-auto max-w-2xl">
+  <%= link_to "← Team schedule", team_schedule_path(week: @date.beginning_of_week), class: "text-sm text-stone-500" %>
+  <p class="eyebrow mt-7">ONE DAY AT A TIME</p><h1 class="mt-2 text-3xl font-medium"><%= @stylist.name %>’s shift.</h1><p class="mb-7 mt-3 text-stone-500"><%= @date.strftime('%A, %B %-d, %Y') %> · <%= Time.zone.tzinfo.identifier %></p>
+  <% if @time_off %>
+    <div class="calendar-panel p-6"><h2 class="text-lg font-semibold">Time off is scheduled.</h2><p class="my-3 text-sm text-stone-500"><%= @time_off.starts_on.strftime('%b %-d') %> – <%= @time_off.ends_on.strftime('%b %-d, %Y') %>. <%= @time_off.note %></p><p class="mb-5 text-sm text-stone-500">Time off takes priority over shifts. Removing it restores the dated shift or recurring hours underneath.</p><%= button_to "Remove time off", time_off_path(@time_off), method: :delete, class: "button", form: { data: { turbo_confirm: "Remove this entire time-off date range?" } } %></div>
+  <% else %>
+    <div class="calendar-panel p-6 md:p-8"><%= render "shared/errors", record: @shift %><%= render "shared/schedule_conflicts", bookings: @shift.conflicting_appointments %>
+      <%= form_with model: @shift, url: stylist_shift_path(@stylist, date: @date), method: :patch, class: "space-y-6" do |form| %>
+        <p class="text-sm text-stone-500">Changes apply only to this date. The usual weekly schedule stays in place.</p>
+        <div class="flex items-center gap-2"><%= form.check_box :closed, class: "!w-auto" %><%= form.label :closed, "Day off", class: "!mb-0" %></div>
+        <div class="grid grid-cols-2 gap-4"><div><%= form.label :opens_at, "Start" %><%= form.time_field :opens_at, required: true %></div><div><%= form.label :closes_at, "Finish" %><%= form.time_field :closes_at, required: true %></div><div><%= form.label :break_starts_at, "Break starts" %><%= form.time_field :break_starts_at %></div><div><%= form.label :break_ends_at, "Break ends" %><%= form.time_field :break_ends_at %></div></div>
+        <%= form.submit "Save shift", class: "button button-primary cursor-pointer" %>
+      <% end %>
+      <% if @shift.persisted? %><div class="mt-6 border-t border-stone-200 pt-5"><%= button_to "Use recurring hours for this date", stylist_shift_path(@stylist, date: @date), method: :delete, class: "text-sm text-stone-500 underline underline-offset-4", form: { data: { turbo_confirm: "Remove this one-day change? Existing bookings will be checked first." } } %></div><% end %>
+    </div>
+    <div class="mt-5 text-sm text-stone-500">Need a longer break? <%= link_to "Add time off", new_time_off_path(stylist_id: @stylist.id, date: @date), class: "underline underline-offset-4" %></div>
+  <% end %>
+</div>

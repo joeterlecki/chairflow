@@ -1,0 +1,3 @@
+<% if record.errors.any? %>
+  <div role="alert" class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800"><ul class="list-inside list-disc"><% record.errors.full_messages.each do |message| %><li><%= message %></li><% end %></ul></div>
+<% end %>

@@ -1,0 +1,7 @@
+<div class="mx-auto max-w-xl"><%= link_to "← Clients", clients_path, class: "text-sm text-stone-500" %><h1 class="mb-6 mt-6 text-3xl font-medium"><%= @client.persisted? ? "A familiar face." : "Someone new." %></h1>
+<div class="calendar-panel p-6"><%= render "shared/errors", record: @client %><%= form_with model: @client, class: "space-y-5" do |form| %>
+<div><%= form.label :name, "Full name" %><%= form.text_field :name, required: true, maxlength: 100, autocomplete: "name" %></div>
+<div><%= form.label :email, "Email (optional)" %><%= form.email_field :email, maxlength: 254, autocomplete: "email" %></div>
+<div><%= form.label :phone, "Phone (optional)" %><%= form.telephone_field :phone, maxlength: 30, autocomplete: "tel" %><p class="field-hint">Include the country code when possible.</p></div>
+<div><%= form.label :preferred_stylist_id, "Preferred stylist" %><%= form.collection_select :preferred_stylist_id, @stylists, :id, :name, { include_blank: "No preference" } %><p class="field-hint">A preference, not a restriction. They can still book with any stylist.</p></div>
+<%= form.submit "Save client", class: "button button-primary cursor-pointer" %><% end %></div></div>

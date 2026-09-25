@@ -1,0 +1,89 @@
+<%= turbo_frame_tag "calendar", data: { turbo_action: "advance", controller: "calendar" } do %>
+  <section class="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <div><p class="eyebrow">YOUR <%= @view.upcase %>, WELL ARRANGED</p><h1 class="mt-2 text-4xl font-medium tracking-tight md:text-5xl">The appointment book.</h1><p class="mt-3 text-stone-500">A little more clarity. A little room to breathe.</p></div>
+    <%= link_to "+ New appointment", new_appointment_path(date: @view == "week" && @days.include?(Date.current) ? Date.current : @date, stylist_id: @selected_stylist&.id, calendar_view: @view), class: "button button-primary", data: { turbo_frame: "_top" } %>
+  </section>
+
+  <section class="calendar-panel">
+    <div class="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 px-5 py-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <div class="flex gap-1">
+          <% step = @view == "day" ? 1 : 7 %>
+          <%= link_to "←", calendar_path(date: @date - step), class: "icon-button", aria: { label: "Previous #{@view}" } %>
+          <%= link_to "→", calendar_path(date: @date + step), class: "icon-button", aria: { label: "Next #{@view}" } %>
+        </div>
+        <h2 class="text-lg font-semibold"><%= @view == "day" ? @date.strftime("%A, %b %-d, %Y") : "#{@week.strftime('%b %-d')} – #{(@week + 6).strftime('%b %-d, %Y')}" %></h2>
+        <%= link_to "Today", calendar_path(date: Date.current), class: "button button-small" %>
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="hidden text-xs text-stone-500 sm:inline"><%= pluralize(@appointments.size, "appointment") %></span>
+        <nav class="view-toggle" aria-label="Calendar view">
+          <%= link_to "Day", calendar_path(view: "day", date: @view == "week" && @days.include?(Date.current) ? Date.current : @date), class: "#{'active' if @view == 'day'}", aria: { current: @view == "day" ? "page" : nil } %>
+          <%= link_to "Week", calendar_path(view: "week"), class: "#{'active' if @view == 'week'}", aria: { current: @view == "week" ? "page" : nil } %>
+        </nav>
+      </div>
+    </div>
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-stone-200 px-5 py-3">
+      <div class="flex flex-wrap items-center gap-1">
+        <span class="mr-2 text-xs font-semibold uppercase tracking-widest text-stone-400">Team</span>
+        <%= link_to "Everyone", calendar_path(stylist_id: nil), class: "filter-chip #{'selected' unless @selected_stylist}" %>
+        <% @stylists.each do |stylist| %>
+          <%= link_to calendar_path(stylist_id: stylist.id), class: "filter-chip #{'selected' if @selected_stylist == stylist}" do %><span class="color-dot <%= stylist.color %>"></span><%= stylist.name %><% end %>
+        <% end %>
+      </div>
+      <span class="text-[11px] text-stone-400"><%= Time.zone.tzinfo.identifier %></span>
+    </div>
+
+    <% if @visible_stylists.empty? %>
+      <p class="p-10 text-center text-stone-500">No stylists yet. Run the demo seeds to fill your appointment book.</p>
+    <% else %>
+      <div class="calendar-viewport" tabindex="0" role="region" aria-label="<%= @view.capitalize %> calendar time grid; scroll for more times and days">
+        <div class="time-grid <%= @view %>-view" style="--day-count: <%= @days.size %>; --lane-count: <%= @visible_stylists.size %>; --day-min: <%= @visible_stylists.size * (@view == 'day' ? 180 : 76) %>px; --grid-height: <%= @grid.height %>px;">
+          <div class="time-grid-header">
+            <div class="time-corner"><span class="eyebrow">TIME</span></div>
+            <% @days.each do |day| %>
+              <div class="grid-day-header <%= 'today-column' if day == Date.current %>">
+                <%= link_to calendar_path(date: day, view: "day"), class: "grid-date-link", aria: { label: "View #{day.strftime('%A, %B %-d')}" } do %>
+                  <span class="eyebrow"><%= day.strftime("%a") %></span><span class="grid-date-number <%= 'is-today' if day == Date.current %>"><%= day.day %></span><span class="text-[10px] text-stone-400"><%= (@by_day[day] || []).size %> bookings</span>
+                <% end %>
+                <div class="lane-headings"><% @visible_stylists.each do |stylist| %><div class="lane-heading" title="<%= stylist.name %>"><span class="color-dot <%= stylist.color %>"></span><span class="truncate"><%= @view == "day" ? stylist.name : stylist.name.split.first %></span></div><% end %></div>
+              </div>
+            <% end %>
+          </div>
+          <div class="time-grid-body">
+            <div class="time-axis"><% (@grid.first_minute...@grid.last_minute).step(60).each do |minute| %><span class="hour-label" style="top: <%= (minute - @grid.first_minute) * CalendarGrid::PIXELS_PER_MINUTE %>px;"><%= @grid.label(minute) %></span><% end %></div>
+            <% @days.each do |day| %>
+              <section class="day-column" aria-label="<%= day.strftime('%A, %B %-d') %>">
+                <% @visible_stylists.each do |stylist| %>
+                  <% schedule = stylist.schedule_for(day) %>
+                  <% bookings = @by_lane.fetch([day, stylist.id], []) %>
+                  <div class="stylist-lane" data-stylist-id="<%= stylist.id %>" data-date="<%= day %>" aria-label="<%= stylist.name %>, <%= day.strftime('%A') %>">
+                    <% if schedule && !schedule.closed? %>
+                      <div class="working-window" style="<%= @grid.position(schedule.opens_at, schedule.closes_at) %>" aria-hidden="true"></div>
+                      <% if schedule.break_starts_at.present? %><div class="break-block" style="<%= @grid.position(schedule.break_starts_at, schedule.break_ends_at) %>" title="Break: <%= schedule.break_starts_at %>–<%= schedule.break_ends_at %>"><span>Break</span></div><% end %>
+                      <% @grid.open_starts(day, schedule, bookings, @default_duration).each do |time, duration| %>
+                        <%= link_to new_appointment_path(date: day, time: time.strftime('%H:%M'), stylist_id: stylist.id, duration_minutes: duration, calendar_view: @view), class: "calendar-open-slot", style: @grid.position(time, time + 15.minutes), aria: { label: "Book #{stylist.name}, #{day.strftime('%B %-d')} at #{time.strftime('%-I:%M %p')}, #{duration} minutes" }, data: { turbo_frame: "_top" } do %><span>+ <%= time.strftime("%-I:%M") %></span><% end %>
+                      <% end %>
+                    <% else %>
+                      <span class="day-off-label"><%= schedule.is_a?(TimeOff) ? "Time off" : "Day off" %></span>
+                    <% end %>
+                    <% bookings.each do |appointment| %>
+                      <% description = "#{appointment.client.name} · #{appointment.service} · #{appointment.starts_at.strftime('%-I:%M %p')}–#{appointment.ends_at.strftime('%-I:%M %p')} · #{appointment.duration_minutes}m · #{stylist.name}" %>
+                      <%= link_to appointment_path(appointment, stylist_id: @selected_stylist&.id, calendar_view: @view), class: "appointment-card #{stylist.color} #{'short-appointment' if appointment.duration_minutes < 45} #{'tiny-appointment' if appointment.duration_minutes == 15}", style: @grid.position(appointment.starts_at, appointment.ends_at), title: description, aria: { label: description, haspopup: "dialog" }, data: { turbo_frame: "booking_details", appointment_id: appointment.id } do %>
+                        <span class="booking-client"><%= appointment.client.name %></span>
+                        <span class="booking-service"><%= appointment.service %></span>
+                        <span class="booking-time"><%= appointment.starts_at.strftime("%-I:%M") %> · <%= appointment.duration_minutes %>m</span>
+                        <span class="sr-only"><%= stylist.name %></span>
+                      <% end %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </section>
+            <% end %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+    <footer class="flex flex-wrap items-center justify-between gap-2 border-t border-stone-200 px-5 py-3 text-xs text-stone-500"><span>Click open space to book. Click an appointment for details.</span><span>Shaded = off hours / break <span class="mx-2">·</span>Click a date for a closer look.</span></footer>
+  </section>
+<% end %>
