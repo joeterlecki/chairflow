@@ -61,7 +61,10 @@ end
 ```
 
 ## Fixtures
-Fixtures mirror a realistic week: stylists Melissa and Devon (plus an inactive one, Pat, for `active`-scope tests), a few services, clients Ava and Noah, and a booked appointment (Ava with Melissa, Thursday). `salon_days` fixtures cover all seven weekdays, Monday closed and the rest open 8 AM to 6 PM — the one stable closed day a test can rely on, see [../scheduling/salon-hours.md](../scheduling/salon-hours.md). `db/seeds.rb` is separate, not loaded from fixtures: it seeds three stylists (Melissa, Devon, Ari), five services, and all seven salon days open 8 AM to 6 PM (no closed day).
+Fixtures mirror a realistic week: stylists Melissa and Devon (plus an inactive one, Pat, for `active`-scope tests), a few services, clients Ava and Noah, and a booked appointment (Ava with Melissa, Thursday). `salon_days` fixtures cover all seven weekdays, Monday closed and the rest open 8 AM to 6 PM — the one stable closed day a test can rely on, see [../scheduling/salon-hours.md](../scheduling/salon-hours.md).
+
+## Dev seed data (`db/seeds.rb`)
+Separate from fixtures, not loaded by tests — this is what running the app locally shows. Same shape as the fixtures (three stylists, five services, Monday closed), plus four clients and, for each of *today and tomorrow* (skipping either if closed), one appointment per stylist: a short single-service one, a combined two-service one, and a long one — enough variety to see card heights, multi-service copy, and swatch colors at a glance without opening a browser dev-tools inspector. Appointments are anchored to `Date.current`/`Date.current + 1.day`, not fixed calendar dates, so the data stays meaningful regardless of when `bin/rails db:seed` runs; re-running it is idempotent (`Appointment.find_or_create_by!` on client/stylist/starts_at, `SalonDay.find_or_initialize_by` + explicit attribute assignment so an existing row still converges to the intended `closed` value). As real UI gets built, extend this file rather than leaving it static, so the dev server keeps showing working examples of whatever exists.
 
 ## Per task
 Every roadmap task names its test under **Done when**. A task isn't done until that test is green in the same commit.

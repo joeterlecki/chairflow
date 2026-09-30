@@ -3,11 +3,29 @@
       headline: "The appointment book.",
       subline: "A little more clarity. A little room to breathe." %>
 
-<div class="grid gap-4" style="grid-template-columns: repeat(<%= @stylists.size %>, minmax(0, 1fr))">
-  <% @stylists.each do |stylist| %>
-    <%= render "calendar/column",
-          stylist: stylist,
-          window: @window,
-          appointments: @appointments.select { |appointment| appointment.stylist_id == stylist.id } %>
-  <% end %>
+<div class="mb-6 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <%= link_to "←", root_path(date: @date - 1.day),
+          class: "rounded-lg border border-line bg-surface px-3 py-1.5 text-sm hover:bg-canvas",
+          "aria-label": "Previous day" %>
+    <%= link_to "→", root_path(date: @date + 1.day),
+          class: "rounded-lg border border-line bg-surface px-3 py-1.5 text-sm hover:bg-canvas",
+          "aria-label": "Next day" %>
+    <%= link_to "Today", root_path, class: "rounded-lg border border-line bg-surface px-3 py-1.5 text-sm hover:bg-canvas" %>
+    <p class="text-lg font-medium text-ink"><%= @date.strftime("%A, %B %-d") %></p>
+  </div>
+  <p class="text-sm text-muted"><%= pluralize(@appointments.count, "appointment") %></p>
 </div>
+
+<% if @window.nil? %>
+  <p class="text-lg text-muted">We're closed today. A well-earned rest.</p>
+<% else %>
+  <div class="grid gap-4" style="grid-template-columns: repeat(<%= @stylists.size %>, minmax(0, 1fr))">
+    <% @stylists.each do |stylist| %>
+      <%= render "calendar/column",
+            stylist: stylist,
+            window: @window,
+            appointments: @appointments.select { |appointment| appointment.stylist_id == stylist.id } %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,11 +1,12 @@
 # Calendar views
 
-> Status: the day view below is implemented at `/` (`CalendarController#index`), except: no date param yet (always `Date.current`), no header (arrows/Today/count), no closed-day message, and cards aren't links yet (no appointment route exists). All of that is still planned. Appointment detail (dialog) and live updates, further down this file, are also still planned.
+> Status: the day view below is implemented at `/` (`CalendarController#index`), including `?date=` and the header. Cards aren't links yet (no appointment route exists) — that, appointment detail (dialog), and live updates, further down this file, are still planned.
 
-## Day view (default, currently always today's date; `?date=` is still planned)
+## Day view (default; `/?date=2026-10-01`, any ISO date, an invalid or missing one falls back to today)
+- Header: ← → arrows and "Today" (all three are plain links to `root_path(date: ...)`), the date (`"Wednesday, September 30"`), and a count (`"3 appointments"`, via `pluralize`).
 - One column per active stylist (`app/views/calendar/_column.html.erb`), named with their swatch dot. Cards are wide enough to show full names.
-- Rows follow the 15-minute slot grid from salon opening to closing (`SalonDay.hours_on(date)`); a closed or hourless day renders the column with no grid at all (not yet the "We're closed today" message — see the Status line above).
-- Still to add: header (date, ← → arrows, "Today", count), tapping an empty cell to start a new appointment, and the Day | Week toggle (after the MVP, with the week view).
+- Rows follow the 15-minute slot grid from salon opening to closing (`SalonDay.hours_on(date)`). A closed (or hourless) day replaces the whole stylist grid with "We're closed today. A well-earned rest." instead of rendering empty columns.
+- Still to add: tapping an empty cell to start a new appointment, and the Day | Week toggle (after the MVP, with the week view).
 
 Cards are placed with CSS grid rows computed from time, via `CalendarHelper` (`app/helpers/calendar_helper.rb`):
 
