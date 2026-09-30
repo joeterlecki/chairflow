@@ -49,7 +49,7 @@ transaction. Back-to-back appointments are allowed (half-open ranges).
 | JS delivery | importmap; no Node build step |
 | Tests | Minitest + fixtures; Capybara system tests on Playwright |
 | Lint / security | `rubocop-rails-omakase`, Brakeman |
-| Logging | Structured (JSON) via `lograge`, not Rails' default free-text lines — see [deployment/summary.md](deployment/summary.md) |
+| Logging | Structured (JSON) via `lograge` (implemented, task 2.1), not Rails' default free-text lines — see [deployment/summary.md](deployment/summary.md) |
 | Later | Rails 8 authentication, Action Mailer reminders, OpenTelemetry tracing |
 
 ## Code conventions

@@ -1,6 +1,6 @@
 # Deployment and configuration
 
-> Status: principles agreed; structured logging is not yet implemented (see task 2.1 in [../plans/roadmap.md](../plans/roadmap.md)). Everything else below is already true of the Rails 8 defaults this app was generated with.
+> Status: structured logging is implemented (task 2.1). Everything else below is already true of the Rails 8 defaults this app was generated with.
 
 We mostly follow [12-factor app](https://12factor.net) principles, with one deliberate deviation on logging.
 
@@ -13,21 +13,27 @@ We mostly follow [12-factor app](https://12factor.net) principles, with one deli
 - **Secrets.** Rails' encrypted `config/credentials.yml.enc` (decrypted via `config/master.key`, itself from `RAILS_MASTER_KEY`) is kept for now rather than moving every secret to a raw env var — there's exactly one salon and no secrets yet. Revisit if/when there's more than a couple of credentials to manage, or a second deploy target.
 
 ## Logging: structured from the start, not stdout noise
-12-factor's logging factor says "treat logs as event streams" and just write unstructured lines to stdout, letting the execution environment collect them. We agree with shipping to stdout (no log files, no in-app log routing), but **disagree that unstructured text is enough.** Rails 8's own production default is exactly that:
+12-factor's logging factor says "treat logs as event streams" and just write unstructured lines to stdout, letting the execution environment collect them. We agree with shipping to stdout (no log files, no in-app log routing), but **disagree that unstructured text is enough.** Rails 8's own production default was exactly that (`ActiveSupport::TaggedLogging.logger(STDOUT)` with a `[request_id]` text prefix on every line) — multi-line, free-text output per request (one line per SQL query, one per render, one per redirect...). It's noise: hard to query, hard to correlate, and every line would need re-touching later to add trace/span IDs.
+
+**What we did instead:** one structured (JSON) line per request, in every environment (not just production), via `lograge`. Chosen over hand-rolling a formatter (more code to maintain) or a heavier framework (`rails_semantic_logger` and friends) this single-salon app doesn't need yet.
 
 ```ruby
-# config/environments/production.rb (Rails 8 default, current state)
-config.log_tags = [ :request_id ]
-config.logger   = ActiveSupport::TaggedLogging.logger(STDOUT)
+# config/initializers/lograge.rb
+Rails.application.configure do
+  config.lograge.enabled = true
+  config.lograge.formatter = Lograge::Formatters::Json.new
+
+  # request_id as a JSON field, not a TaggedLogging text prefix (which would break the JSON).
+  config.lograge.custom_options = lambda do |event|
+    { request_id: event.payload[:headers]["action_dispatch.request_id"] }
+  end
+end
 ```
-This produces multi-line, free-text log output per request (one line per SQL query, one per render, one per redirect...). It's noise: hard to query, hard to correlate, and every line would need re-touching later to add trace/span IDs.
+`ActiveSupport::TaggedLogging` and `lograge`'s JSON formatter don't mix: tags are a plain-text prefix (`[request_id] {...}`), which breaks the line as JSON. So `config/environments/production.rb` was changed from tagged logging to a plain `ActiveSupport::Logger.new(STDOUT)`, and `request_id` is carried as a JSON field via `custom_options` instead (pulled from `event.payload[:headers]["action_dispatch.request_id"]`, which `ActionController::Instrumentation` always includes).
 
-**Decision:** log one structured (JSON) line per request from day one, with fields that map cleanly onto a future trace's span attributes (`request_id`, `controller`, `action`, `status`, `duration`, `db_runtime`, `view_runtime`). The concrete mechanism (task 2.1): the `lograge` gem, condensing each request into a single `Lograge::Formatters::Json` line. This is chosen over hand-rolling a formatter (more code to maintain ourselves) or a heavier logging framework (`rails_semantic_logger` and friends) that this single-salon app doesn't need yet.
-
-```ruby
-# config/environments/production.rb (planned, task 2.1)
-config.lograge.enabled = true
-config.lograge.formatter = Lograge::Formatters::Json.new
+Verified by request (`curl localhost:PORT/up`, development env) — one line:
+```json
+{"method":"GET","path":"/up","format":"*/*","controller":"Rails::HealthController","action":"show","status":200,"allocations":2298,"duration":1.84,"view":0.79,"db":0.0,"request_id":"e74310ac-..."}
 ```
 
 ```mermaid
@@ -38,7 +44,7 @@ flowchart LR
   L -.->|later, same fields become<br/>span attributes, no refactor| T[Trace/span exporter]
 ```
 
-Rails' framework-internal chatter (SQL queries, view rendering, asset lookups) is not disabled, just no longer the primary signal — lograge's one line per request is. Verify in development too (where readable logs matter for debugging); a per-environment call on whether development keeps lograge or the default formatter is part of task 2.1.
+Rails' framework-internal chatter (SQL queries, view rendering, asset lookups) is not disabled, just no longer the primary signal — lograge's one line per request is.
 
 ## Later
 - OpenTelemetry (traces/spans) once there's something worth tracing across — a second service, a slow endpoint, a real production deploy. The structured-logging fields above are chosen so that move doesn't require re-touching call sites.

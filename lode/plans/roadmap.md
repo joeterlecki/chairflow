@@ -18,7 +18,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **1.6 Availability.** `Availability` within salon hours. *Done when:* unit tests cover the edge cases in [../scheduling/availability.md](../scheduling/availability.md).
 
 ## Phase 2: Seeing the day
-- [ ] **2.1 Structured logging baseline.** `lograge` with a JSON formatter, before the first real controller exists. *Done when:* a request in the dev/test log emits one JSON line (not Rails' default multi-line text), recorded in [../deployment/summary.md](../deployment/summary.md).
+- [x] **2.1 Structured logging baseline.** `lograge` with a JSON formatter, before the first real controller exists. *Done when:* a request in the dev/test log emits one JSON line (not Rails' default multi-line text), recorded in [../deployment/summary.md](../deployment/summary.md).
 - [ ] **2.2 Layout and look.** Tokens, nav, page header partial, flash. *Done when:* a system test visits `/` and sees "The appointment book."
 - [ ] **2.3 Day view.** Stylist columns with appointment cards placed by time. *Done when:* a system test sees a fixture appointment under the right stylist.
 - [ ] **2.4 Moving between days.** Arrows, Today, count, closed-day message. *Done when:* a system test steps to tomorrow and back.
