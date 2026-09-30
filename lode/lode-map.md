@@ -21,6 +21,8 @@ lode/
 │   └── summary.md                 Booking order, service rows, day planner, inline client add
 ├── clients/
 │   └── summary.md                 Client model, duplicate warning (never merge), pages
+├── deployment/
+│   └── summary.md                 12-factor stance, containers/config/secrets, structured logging
 ├── ui/
 │   ├── summary.md                 Visual direction, MVP page map, layout skeleton
 │   ├── voice-and-copy.md          Heading pattern, tone rules, page copy
@@ -40,4 +42,5 @@ flowchart TD
   SCH --> BK[booking]
   BK --> CL[clients]
   P --> TE[testing]
+  P --> DEP[deployment]
 ```

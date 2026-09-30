@@ -49,7 +49,8 @@ transaction. Back-to-back appointments are allowed (half-open ranges).
 | JS delivery | importmap; no Node build step |
 | Tests | Minitest + fixtures; Capybara system tests on Playwright |
 | Lint / security | `rubocop-rails-omakase`, Brakeman |
-| Later | Rails 8 authentication, Action Mailer reminders, Kamal |
+| Logging | Structured (JSON) via `lograge`, not Rails' default free-text lines — see [deployment/summary.md](deployment/summary.md) |
+| Later | Rails 8 authentication, Action Mailer reminders, OpenTelemetry tracing |
 
 ## Code conventions
 - Business rules live in models and small POROs under `app/models` (e.g. `Availability`). No `app/services` grab-bag.
