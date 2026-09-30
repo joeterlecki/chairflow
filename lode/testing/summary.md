@@ -61,7 +61,7 @@ end
 ```
 
 ## Fixtures
-Fixtures mirror a realistic week: stylists Melissa and Devon (plus an inactive one, Pat, for `active`-scope tests), a few services, clients Ava and Noah, and a booked appointment (Ava with Melissa). `salon_days` fixtures cover an open Sunday and a closed Monday, rather than all seven days — see [../scheduling/salon-hours.md](../scheduling/salon-hours.md). `db/seeds.rb` is separate, not loaded from fixtures: it seeds three stylists (Melissa, Devon, Ari), five services, and all seven salon days open 8 AM to 6 PM.
+Fixtures mirror a realistic week: stylists Melissa and Devon (plus an inactive one, Pat, for `active`-scope tests), a few services, clients Ava and Noah, and a booked appointment (Ava with Melissa, Thursday). `salon_days` fixtures cover all seven weekdays, Monday closed and the rest open 8 AM to 6 PM — the one stable closed day a test can rely on, see [../scheduling/salon-hours.md](../scheduling/salon-hours.md). `db/seeds.rb` is separate, not loaded from fixtures: it seeds three stylists (Melissa, Devon, Ari), five services, and all seven salon days open 8 AM to 6 PM (no closed day).
 
 ## Per task
 Every roadmap task names its test under **Done when**. A task isn't done until that test is green in the same commit.

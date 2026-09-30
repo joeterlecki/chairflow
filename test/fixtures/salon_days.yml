@@ -1,4 +1,6 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+# Every weekday has a row, matching db/seeds.rb, except Monday is closed (so
+# there's always a stable closed day to test against).
 
 sunday:
   wday: 0
@@ -9,5 +11,35 @@ sunday:
 monday_closed:
   wday: 1
   closed: true
+  opens_minute: 480
+  closes_minute: 1080
+
+tuesday:
+  wday: 2
+  closed: false
+  opens_minute: 480
+  closes_minute: 1080
+
+wednesday:
+  wday: 3
+  closed: false
+  opens_minute: 480
+  closes_minute: 1080
+
+thursday:
+  wday: 4
+  closed: false
+  opens_minute: 480
+  closes_minute: 1080
+
+friday:
+  wday: 5
+  closed: false
+  opens_minute: 480
+  closes_minute: 1080
+
+saturday:
+  wday: 6
+  closed: false
   opens_minute: 480
   closes_minute: 1080

@@ -1,6 +1,6 @@
 # Design tokens
 
-> Status: the `@theme` block below is implemented verbatim in `app/assets/tailwind/application.css`. `StylistsHelper`/`SWATCH_CLASSES` is still planned — no view uses stylist swatches yet. The values are approximations from the POC screenshots; tune them in the browser.
+> Status: the `@theme` block below and `StylistsHelper` (`app/helpers/stylists_helper.rb`) are both implemented — used by the day view's stylist columns. `StylistsHelper` also has `SWATCH_DOT_CLASSES`/`swatch_dot_classes`, a solid-color companion to `SWATCH_CLASSES` for the small dot next to each stylist's name (not shown below). The color values are approximations from the POC screenshots; tune them in the browser.
 
 ## Theme (Tailwind v4)
 Tokens live in the Tailwind entry file as `@theme` variables, so utilities like `bg-canvas` and `text-muted` exist.

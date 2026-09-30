@@ -1,31 +1,29 @@
 # Calendar views
 
-> Status: planned, not yet implemented. Day view is the default; judge it in practice.
+> Status: the day view below is implemented at `/` (`CalendarController#index`), except: no date param yet (always `Date.current`), no header (arrows/Today/count), no closed-day message, and cards aren't links yet (no appointment route exists). All of that is still planned. Appointment detail (dialog) and live updates, further down this file, are also still planned.
 
-## Day view (default, `/calendar?date=`)
-- One column per active stylist, named with their swatch dot. Cards are wide enough to show full names.
-- Rows follow the 15-minute slot grid from salon opening to closing (`SalonDay.hours_on(date)`), widened if any appointment falls outside them. A closed day shows "We're closed today. A well-earned rest."
-- Header: date, ← → arrows, "Today", count ("19 appointments"). The Day | Week toggle arrives with the week view after the MVP.
-- Tapping an empty open cell starts a new appointment prefilled with that stylist and time.
+## Day view (default, currently always today's date; `?date=` is still planned)
+- One column per active stylist (`app/views/calendar/_column.html.erb`), named with their swatch dot. Cards are wide enough to show full names.
+- Rows follow the 15-minute slot grid from salon opening to closing (`SalonDay.hours_on(date)`); a closed or hourless day renders the column with no grid at all (not yet the "We're closed today" message — see the Status line above).
+- Still to add: header (date, ← → arrows, "Today", count), tapping an empty cell to start a new appointment, and the Day | Week toggle (after the MVP, with the week view).
 
-Cards are placed with CSS grid rows computed from time:
+Cards are placed with CSS grid rows computed from time, via `CalendarHelper` (`app/helpers/calendar_helper.rb`):
 
 ```erb
-<%# app/views/calendars/_column.html.erb (excerpt) %>
-<div class="grid" style="grid-template-rows: repeat(<%= day.slot_count %>, minmax(1.5rem, auto))">
-  <% appointments.each do |appt| %>
-    <%= link_to appointment_path(appt),
-          data: { turbo_frame: "modal" },
-          class: "rounded-lg border-l-[3px] px-3 py-2 #{swatch_classes(appt.stylist)}",
-          style: "grid-row: #{day.row_for(appt.starts_at)} / span #{day.span_for(appt)}" do %>
-      <p class="font-medium text-ink"><%= appt.client.name %></p>
-      <p class="text-sm text-muted"><%= appt.services.map(&:name).to_sentence %> · <%= appt.starts_at.strftime("%-l:%M") %></p>
-    <% end %>
+<%# app/views/calendar/_column.html.erb (excerpt) %>
+<div class="grid" style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
+  <% appointments.each do |appointment| %>
+    <div class="rounded-lg border-l-[3px] px-3 py-2 <%= swatch_classes(stylist) %>"
+         style="grid-row: <%= day_row_for(window, appointment.starts_at) %> / span <%= day_span_for(appointment.duration) %>">
+      <p class="font-medium text-ink"><%= appointment.client.name %></p>
+      <p class="text-sm text-muted">
+        <%= appointment.services.map(&:name).to_sentence %> · <%= appointment.starts_at.strftime("%-l:%M") %>
+      </p>
+    </div>
   <% end %>
 </div>
 ```
-
-`row_for` = `((time - day_start) / 15.minutes).to_i + 1`, and `span_for` = duration / 15 minutes.
+`window` is `SalonDay.hours_on(date)` (a `Range` of `TimeWithZone`, or `nil`). `day_row_for` = `((time - window.begin) / 15.minutes).to_i + 1`; `day_span_for` = `(duration / 15.minutes).ceil`. Cards aren't wrapped in `link_to appointment_path(...)` yet — that route doesn't exist until appointment detail (below) is built; until then each stylist column carries `id="stylist-column-#{stylist.id}"` so tests can scope into it.
 
 ## Week overview (after MVP)
 Planned shape, for when it's picked up: one column per day showing each stylist's load and next opening, tapping through to the day. A single-stylist filter shows a full 7-column grid. The POC's 21-column grid is not repeated.

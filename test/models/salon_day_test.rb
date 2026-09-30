@@ -36,7 +36,8 @@ class SalonDayTest < ActiveSupport::TestCase
   end
 
   test "hours_on returns nil when there is no row for that weekday" do
-    assert_nil SalonDay.hours_on(Date.new(2026, 10, 6)) # a Tuesday, no fixture
+    SalonDay.where(wday: 2).delete_all
+    assert_nil SalonDay.hours_on(Date.new(2026, 10, 6)) # a Tuesday, row removed above
   end
 
   test "hours_on returns the range for an open day" do
