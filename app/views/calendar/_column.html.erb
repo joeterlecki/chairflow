@@ -7,6 +7,14 @@
   <% if window %>
     <div class="relative grid flex-1 gap-y-1 rounded-xl border border-line bg-surface"
          style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
+      <% day_hour_marks(window).each do |row| %>
+        <div class="pointer-events-none h-px w-full self-start bg-line" style="grid-row: <%= row %> / span 1" aria-hidden="true"></div>
+      <% end %>
+
+      <% if (now_row = day_now_row(window)) %>
+        <div id="now-line-<%= stylist.id %>" class="pointer-events-none h-0.5 w-full self-start bg-pine" style="grid-row: <%= now_row %> / span 1" aria-hidden="true"></div>
+      <% end %>
+
       <% appointments.each do |appointment| %>
         <%= link_to appointment_path(appointment),
               data: { turbo_frame: "modal" },

@@ -17,6 +17,14 @@ Cards are placed with CSS grid rows computed from time, via `CalendarHelper` (`a
 
   <div class="relative grid flex-1 gap-y-1 rounded-xl border border-line bg-surface"
        style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
+    <% day_hour_marks(window).each do |row| %>
+      <div class="pointer-events-none h-px w-full self-start bg-line" style="grid-row: <%= row %> / span 1" aria-hidden="true"></div>
+    <% end %>
+
+    <% if (now_row = day_now_row(window)) %>
+      <div id="now-line-<%= stylist.id %>" class="pointer-events-none h-0.5 w-full self-start bg-pine" style="grid-row: <%= now_row %> / span 1" aria-hidden="true"></div>
+    <% end %>
+
     <% appointments.each do |appointment| %>
       <%= link_to appointment_path(appointment),
             data: { turbo_frame: "modal" },
@@ -31,16 +39,15 @@ Cards are placed with CSS grid rows computed from time, via `CalendarHelper` (`a
   </div>
 </div>
 ```
-`window` is `SalonDay.hours_on(date)` (a `Range` of `TimeWithZone`, or `nil`). `day_row_for` = `((time - window.begin) / 15.minutes).to_i + 1`; `day_span_for` = `(duration / 15.minutes).ceil`. Each stylist column also carries `id="stylist-column-#{stylist.id}"` so tests can scope into it.
+`window` is `SalonDay.hours_on(date)` (a `Range` of `TimeWithZone`, or `nil`). `day_row_for` = `((time - window.begin) / 15.minutes).to_i + 1`; `day_span_for` = `(duration / 15.minutes).ceil`. Each stylist column also carries `id="stylist-column-#{stylist.id}"` so tests can scope into it. The hour-mark and now-line elements come first in DOM order, so appointment cards (added after) paint on top of them wherever they'd otherwise overlap.
 
 **`gap-y-1` on the grid matters**: without it, two back-to-back appointments for the same stylist render with touching edges — visually one card, not two. A CSS Grid item that spans multiple row tracks absorbs any `row-gap` *within* its own span into its own height (so a single card stays one continuous box, not sliced by internal gaps); the gap only becomes visible at the boundary between two different items. That's why a uniform `gap-y-1` on the whole grid is enough — it doesn't need to be conditional on "is this card adjacent to another."
 
 **All three columns end at the same height, on purpose.** Each stylist's bordered box has its own `grid-template-rows` and sizes to its own content (`minmax(1.25rem, auto)` lets a row grow if a card needs more room than its nominal slot) — three independent grids with different appointments naturally compute different total heights. The outer day view's 3-column grid (`app/views/calendar/index.html.erb`) stretches each stylist's *wrapper* div to match the tallest one (CSS Grid's default `align-items: stretch`, since none of them declare an explicit height), but that stretch doesn't reach the bordered box nested one level inside the wrapper — it still sizes to its own content unless told otherwise. `flex h-full flex-col` on the wrapper plus `flex-1` on the bordered box closes that gap: the box grows to fill whatever height the wrapper was stretched to, so all three read as one continuous row of equal-height cards even when their appointment counts differ.
 
-**No dense hour gridlines or a labeled time-axis gutter** (dark lines, hour labels in a persistent left column) — that would add visual density this app's calm, minimal design language (see [../practices.md](../practices.md), [../summary.md](../summary.md)) doesn't need; Hey Calendar's *week* view skips it for the same reason. A much lighter version is still an open idea, though, for a reason specific to *this* layout: Hey's day view is one timeline (hour labels there are personal orientation), but ours is three side-by-side stylist columns, whose whole point is comparing across them — "who's free at 2pm" currently relies entirely on eyeballing pixel alignment between columns, with no shared reference at all. A hairline-thin, low-contrast tick every hour (no labels, no gutter) might reduce that friction without reading as clutter. Not built; revisit at task 3.7 (see [../plans/roadmap.md](../plans/roadmap.md)), alongside the current-time indicator below, since both are about giving the empty grid space meaning.
+**No dense hour gridlines or a labeled time-axis gutter** (dark lines, hour labels in a persistent left column) — that would add visual density this app's calm, minimal design language (see [../practices.md](../practices.md), [../summary.md](../summary.md)) doesn't need; Hey Calendar's *week* view skips it for the same reason. A much lighter version earns its place for a reason specific to *this* layout, though: Hey's day view is one timeline (hour labels there are personal orientation), but ours is three side-by-side stylist columns, whose whole point is comparing across them — "who's free at 2pm" would otherwise rely entirely on eyeballing pixel alignment between columns, with no shared reference at all. `day_hour_marks` (`CalendarHelper`) returns the row index of every hour boundary strictly inside the window (never the very top or bottom edge, which the column's own border already marks); each renders as a 1px `bg-line` hairline, no label, no gutter — quiet enough not to read as clutter, present enough to line up "2pm" across all three columns at a glance.
 
-## Later
-- A current-time indicator (a line across all stylist columns at "now," shown only when viewing today) — not built. Directly serves the "front desk lives in today... who's in now" principle in [../practices.md](../practices.md), distinct from the gridlines question above. Revisit at task 3.7.
+**A current-time indicator**, in the same spirit: a bolder line (`h-0.5`, the `--color-pine` accent — design-tokens.md already names pine's role as "the one accent: primary buttons, **today marker**") at "now," snapped to the same 15-minute grid as everything else rather than pixel-exact (consistent with how the rest of the app treats time, not a corner cut). `day_now_row` returns `nil` — and nothing renders — unless `window.cover?(Time.current)` is true, which elegantly answers both "is this today" and "is it within salon hours" in one check, since `window` is already anchored to the specific date being viewed. This directly serves `practices.md`'s "front desk lives in today... who's in now" principle, distinct from the gridlines above (which are about cross-column comparison on any day, not specifically "now").
 
 ## Week overview (after MVP)
 Planned shape, for when it's picked up: one column per day showing each stylist's load and next opening, tapping through to the day. A single-stylist filter shows a full 7-column grid. The POC's 21-column grid is not repeated.

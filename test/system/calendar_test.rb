@@ -46,4 +46,29 @@ class CalendarTest < ApplicationSystemTestCase
       assert_no_selector "#stylist-column-#{stylists(:melissa).id}"
     end
   end
+
+  test "shows a now-line during salon hours today" do
+    travel_to Time.zone.parse("2026-10-04 10:00") do # a Sunday, open in fixtures
+      visit root_path
+
+      assert_selector "#now-line-#{stylists(:melissa).id}"
+    end
+  end
+
+  test "doesn't show a now-line outside salon hours" do
+    travel_to Time.zone.parse("2026-10-04 22:00") do # same Sunday, after closing
+      visit root_path
+
+      assert_no_selector "#now-line-#{stylists(:melissa).id}"
+    end
+  end
+
+  test "doesn't show a now-line for a day other than today" do
+    travel_to Time.zone.parse("2026-10-03 10:00") do # a Saturday, open in fixtures
+      visit root_path
+      click_on "→" # Sunday, also open -- isolates "wrong day" from "closed day"
+
+      assert_no_selector "#now-line-#{stylists(:melissa).id}"
+    end
+  end
 end
