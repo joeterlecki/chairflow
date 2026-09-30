@@ -13,7 +13,7 @@ SQLite has no exclusion constraints, so the model enforces the rule. It must be 
 ## How we enforce it
 1. A model validation checks for a clash.
 2. `save` runs validations inside its transaction.
-3. Rails 8's SQLite adapter starts transactions as `IMMEDIATE`, which takes the write lock at `BEGIN`, so a second writer waits and then sees the first appointment. **Verify this during scaffolding**; set `default_transaction_mode: immediate` in `config/database.yml` if needed.
+3. Rails 8's SQLite adapter starts transactions as `IMMEDIATE`, which takes the write lock at `BEGIN`, so a second writer waits and then sees the first appointment. **Confirmed (task 0.4):** `SQLite3Adapter` hardcodes `default_transaction_mode: :immediate` unconditionally in its connection parameters (`activerecord-8.1.4/lib/active_record/connection_adapters/sqlite3_adapter.rb`) — no `config/database.yml` change needed or possible to override.
 
 ```ruby
 # app/models/appointment.rb (additions on top of the existing model, see summary.md)

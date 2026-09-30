@@ -6,7 +6,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **0.1 Archive the POC.** `git branch archive/poc-v1 && git tag poc-v1 && git push origin archive/poc-v1 --tags`. *Done when:* branch and tag exist on the remote.
 - [x] **0.2 New Rails app on a clean main.** Remove the old code; `rails new . --css=tailwind`. *Done when:* `bin/dev` serves the Rails welcome page.
 - [x] **0.3 Add the lode.** Commit `lode/` and ignore `lode/tmp/`. *Done when:* `lode/` is committed and `git status` is clean after writing to `lode/tmp/`.
-- [ ] **0.4 Time zone and SQLite transactions.** Set `America/New_York`; confirm `IMMEDIATE` transactions. *Done when:* a one-line test asserts `Time.zone.name`, and the transaction mode is recorded in the lode.
+- [x] **0.4 Time zone and SQLite transactions.** Set `America/New_York`; confirm `IMMEDIATE` transactions. *Done when:* a one-line test asserts `Time.zone.name`, and the transaction mode is recorded in the lode.
 - [ ] **0.5 Browser tests and CI.** Capybara + Playwright, one smoke system test, CI runs everything. *Done when:* CI is green, including the smoke test.
 
 ## Phase 1: Foundations

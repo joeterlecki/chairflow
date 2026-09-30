@@ -1,9 +1,9 @@
 # Time zones and DST
 
-> Status: planned, not yet implemented.
+> Status: the zone is set (task 0.4); `SalonDay` and the DST-safe `range_on` below are still planned (task 1.5).
 
 ## Rules
-- The salon zone is `America/New_York`: `config.time_zone = "America/New_York"`.
+- The salon zone is `America/New_York`, set in `config/application.rb`: `config.time_zone = "America/New_York"`.
 - Every `datetime` column is stored in UTC (Rails default). Display always uses `Time.zone`.
 - Salon hours are **wall-clock minutes** (480 = 8:00), turned into times with `change`, never by adding minutes to midnight. "8 to 6 Eastern" means 8 to 6 local time in both EST and EDT. See [salon-hours.md](salon-hours.md).
 - Form input from `datetime-local` is parsed in the salon zone with `Time.zone.parse`.
