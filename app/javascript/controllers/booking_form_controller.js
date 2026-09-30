@@ -5,7 +5,10 @@ import { Controller } from "@hotwired/stimulus"
 // planner (reloaded whenever the stylist or total duration changes; tapping a
 // slot fills the Time field).
 export default class extends Controller {
-  static targets = ["rows", "template", "row", "duration", "total", "stylist", "plannerFrame", "startsAt"]
+  static targets = [
+    "rows", "template", "row", "duration", "total", "stylist", "plannerFrame", "startsAt",
+    "clientQuery", "clientId", "newClientName", "clientResults"
+  ]
 
   connect() {
     this.totalTarget.textContent = `${this.totalMinutes()} min`
@@ -68,6 +71,35 @@ export default class extends Controller {
 
   choose(event) {
     this.startsAtTarget.value = event.currentTarget.dataset.plannerValue
+  }
+
+  // Typing resets any prior choice -- the front desk has to re-pick (or add
+  // new) rather than silently keep a stale client_id/new_client_name around.
+  searchClients(event) {
+    clearTimeout(this.searchTimer)
+    this.clientIdTarget.value = ""
+    this.newClientNameTarget.value = ""
+
+    const query = event.target.value.trim()
+    this.searchTimer = setTimeout(() => {
+      const url = new URL(this.clientResultsTarget.dataset.baseUrl, window.location.origin)
+      if (query) url.searchParams.set("q", query)
+      this.clientResultsTarget.src = url.toString()
+    }, 200)
+  }
+
+  chooseClient(event) {
+    this.clientIdTarget.value = event.currentTarget.dataset.clientId
+    this.newClientNameTarget.value = ""
+    this.clientQueryTarget.value = event.currentTarget.dataset.clientName
+    this.clientResultsTarget.innerHTML = ""
+  }
+
+  addNewClient(event) {
+    this.clientIdTarget.value = ""
+    this.newClientNameTarget.value = event.currentTarget.dataset.clientName
+    this.clientQueryTarget.value = event.currentTarget.dataset.clientName
+    this.clientResultsTarget.innerHTML = ""
   }
 
   totalMinutes() {

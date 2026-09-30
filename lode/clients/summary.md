@@ -1,6 +1,6 @@
 # Clients
 
-> Status: the model below is implemented. Pages (index/profile/edit) are still planned.
+> Status: the model below is implemented. Booking (see [../booking/summary.md](../booking/summary.md)) can now find an existing client or create a new one inline, but doesn't call `possible_duplicates_of` yet — the duplicate warning below is still planned. Pages (index/profile/edit) are still planned.
 
 A client is a person who gets appointments. Keep the record light: a name, optional ways to reach them, and a preferred stylist. No CRM features.
 

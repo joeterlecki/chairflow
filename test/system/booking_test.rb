@@ -1,13 +1,27 @@
 require "application_system_test_case"
 
 class BookingTest < ApplicationSystemTestCase
+  def pick_existing_client(name)
+    fill_in "Client", with: name
+    within "#client_search" do
+      click_on name
+    end
+  end
+
+  def add_new_client(name)
+    fill_in "Client", with: name
+    within "#client_search" do
+      click_on "+ Add “#{name}” as a new client"
+    end
+  end
+
   test "books an existing client with one service at a typed time, from the calendar" do
     travel_to Time.zone.parse("2026-10-01 08:00") do
       visit root_path
       click_on "+ New appointment"
 
       within "dialog" do
-        select "Noah Carter", from: "Client"
+        pick_existing_client("Noah Carter")
         select "Melissa", from: "Stylist"
         select "Blowout", from: "Service"
         fill_in "Time", with: "2026-10-01T14:00"
@@ -41,7 +55,7 @@ class BookingTest < ApplicationSystemTestCase
       click_on "+ New appointment"
 
       within "dialog" do
-        select "Noah Carter", from: "Client"
+        pick_existing_client("Noah Carter")
         select "Melissa", from: "Stylist"
 
         within all("[data-booking-form-target='row']").first do
@@ -86,7 +100,7 @@ class BookingTest < ApplicationSystemTestCase
       click_on "+ New appointment"
 
       within "dialog" do
-        select "Noah Carter", from: "Client"
+        pick_existing_client("Noah Carter")
         select "Melissa", from: "Stylist"
         select "Cut & finish", from: "Service" # 45 min; ava_visit already has Melissa booked 9:00-9:45 that day
 
@@ -123,6 +137,46 @@ class BookingTest < ApplicationSystemTestCase
         click_on "Remove"
       end
       assert_text "45 min"
+    end
+  end
+
+  test "searching shows matching clients as you type" do
+    visit root_path
+    click_on "+ New appointment"
+
+    within "dialog" do
+      fill_in "Client", with: "Ava"
+      within "#client_search" do
+        assert_text "Ava Thompson"
+        assert_no_text "Noah Carter"
+      end
+    end
+  end
+
+  test "books a brand-new client" do
+    travel_to Time.zone.parse("2026-10-01 08:00") do
+      assert_not Client.exists?(name: "Priya Sharma")
+
+      visit root_path
+      click_on "+ New appointment"
+
+      within "dialog" do
+        add_new_client("Priya Sharma")
+        select "Melissa", from: "Stylist"
+        select "Blowout", from: "Service"
+        fill_in "Time", with: "2026-10-01T15:00"
+        click_on "Book appointment"
+      end
+
+      assert_no_selector "dialog"
+      assert_text "Booked. Priya Sharma is in with Melissa at 3:00."
+      new_client = Client.find_by(name: "Priya Sharma")
+      assert new_client.present?
+      assert_equal stylists(:melissa), new_client.preferred_stylist
+
+      within "#stylist-column-#{stylists(:melissa).id}" do
+        assert_text "Priya Sharma"
+      end
     end
   end
 

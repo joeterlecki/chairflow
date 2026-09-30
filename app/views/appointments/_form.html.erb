@@ -1,13 +1,18 @@
 <%= form_with model: appointment, data: { turbo_frame: "_top", controller: "booking-form" } do |form| %>
   <%= render "shared/errors", object: appointment %>
 
-  <div class="mb-4 max-w-md">
-    <%= form.label :client_id, "Client", class: "mb-1 block text-sm font-medium text-ink" %>
-    <div class="relative">
-      <%= form.collection_select :client_id, Client.alphabetical, :id, :name, { prompt: true },
-            class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink" %>
-      <%= select_chevron %>
-    </div>
+  <div class="relative mb-4 max-w-md">
+    <%= label_tag "client_query", "Client", class: "mb-1 block text-sm font-medium text-ink" %>
+    <%= text_field_tag "client_query", appointment.client&.name || new_client_name,
+          autocomplete: "off",
+          placeholder: "Search or add a client",
+          data: { "booking-form-target": "clientQuery", action: "input->booking-form#searchClients" },
+          class: "w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink" %>
+    <%= form.hidden_field :client_id, data: { "booking-form-target": "clientId" } %>
+    <%= hidden_field_tag "appointment[new_client_name]", new_client_name, data: { "booking-form-target": "newClientName" } %>
+    <%= turbo_frame_tag "client_search",
+          src: client_search_appointments_path,
+          data: { "booking-form-target": "clientResults", "base-url": client_search_appointments_path } %>
   </div>
 
   <div class="mb-4 max-w-md">

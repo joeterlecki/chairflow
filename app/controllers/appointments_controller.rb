@@ -9,15 +9,25 @@ class AppointmentsController < ApplicationController
     @appointment.appointment_services.build
   end
 
+  # New clients are created in the same transaction as the appointment, so a
+  # booking that fails for any other reason (e.g. a time clash) leaves no
+  # orphan client behind.
   def create
     @appointment = Appointment.new(appointment_attributes)
-    if @appointment.save
-      redirect_to root_path(date: @appointment.starts_at.to_date),
-        notice: "Booked. #{@appointment.client.name} is in with #{@appointment.stylist.name} at #{@appointment.starts_at.strftime('%-l:%M')}."
-    else
-      @date = @appointment.starts_at&.to_date || Date.current
-      render :new, status: :unprocessable_entity
+    @new_client_name = new_client_name
+
+    Appointment.transaction do
+      if @appointment.client.nil? && @new_client_name.present?
+        @appointment.client = Client.create!(name: @new_client_name, preferred_stylist: @appointment.stylist)
+      end
+      @appointment.save!
     end
+
+    redirect_to root_path(date: @appointment.starts_at.to_date),
+      notice: "Booked. #{@appointment.client.name} is in with #{@appointment.stylist.name} at #{@appointment.starts_at.strftime('%-l:%M')}."
+  rescue ActiveRecord::RecordInvalid
+    @date = @appointment.starts_at&.to_date || Date.current
+    render :new, status: :unprocessable_entity
   end
 
   # "Find the right moment": open slots for a stylist/date/total-duration, reloaded
@@ -36,6 +46,16 @@ class AppointmentsController < ApplicationController
     render layout: false
   end
 
+  # The client search box: matches as you type, with "+ Add ... as a new
+  # client" always the last option. No matches for a blank query -- the
+  # front desk hasn't typed anything to search for yet.
+  def client_search
+    @query = params[:q].to_s.strip
+    @clients = @query.present? ? Client.matching(@query).alphabetical.limit(5) : Client.none
+
+    render layout: false
+  end
+
   private
 
   # Picked from Service.active, not typed -- creating services (and, later,
@@ -45,6 +65,10 @@ class AppointmentsController < ApplicationController
     attrs = params.expect(appointment: [ :client_id, :stylist_id, :starts_at ]).to_h
     attrs["appointment_services_attributes"] = service_rows
     attrs
+  end
+
+  def new_client_name
+    params.dig(:appointment, :new_client_name).to_s.strip
   end
 
   def service_rows

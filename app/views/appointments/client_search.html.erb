@@ -1,0 +1,21 @@
+<%= turbo_frame_tag "client_search" do %>
+  <% if @query.present? %>
+    <div class="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-line bg-surface shadow-sm">
+      <% @clients.each do |client| %>
+        <button type="button"
+                data-action="booking-form#chooseClient"
+                data-client-id="<%= client.id %>"
+                data-client-name="<%= client.name %>"
+                class="block w-full px-3 py-2 text-left text-sm text-ink hover:bg-canvas">
+          <%= client.name %>
+        </button>
+      <% end %>
+      <button type="button"
+              data-action="booking-form#addNewClient"
+              data-client-name="<%= @query %>"
+              class="block w-full border-t border-line px-3 py-2 text-left text-sm text-pine hover:bg-canvas">
+        + Add &ldquo;<%= @query %>&rdquo; as a new client
+      </button>
+    </div>
+  <% end %>
+<% end %>

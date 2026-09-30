@@ -1,6 +1,6 @@
 # Booking flow
 
-> Status: an existing client, one or several services (picked from `Service.active`, see below), and a moment — tap a day planner slot or type the time directly, both write to the same field (`appointments#new`/`#create`/`#day_planner`, `resources :appointments, only: [:show, :new, :create]` plus a `day_planner` collection route) — opening as a modal like appointment detail (see below). Not yet built: client search + inline creation, the duplicate warning, and friendly clash handling (today a clash just re-renders the form with `Appointment`'s existing validation message via `shared/_errors`). The order below is the agreed target shape; what's built so far is a plain form, not this flow.
+> Status: search or add a client, one or several services (picked from `Service.active`), and a moment — tap a day planner slot or type the time directly, both write to the same field (`appointments#new`/`#create`/`#day_planner`/`#client_search`, `resources :appointments, only: [:show, :new, :create]` plus `day_planner` and `client_search` collection routes) — opening as a modal like appointment detail (see below). Not yet built: the duplicate warning (adding a new client never checks for a possible match yet — see [../clients/summary.md](../clients/summary.md)) and friendly clash handling (today a clash just re-renders the form with `Appointment`'s existing validation message via `shared/_errors`). The order below is the agreed target shape; what's built so far is a plain form, not this flow.
 
 ## Intent
 Follow how the conversation at the desk goes: *"She wants a cut and a gloss, ideally with Melissa, sometime Wednesday."* The front desk and stylists both book, so the flow must be quick on a phone between clients too.
@@ -102,8 +102,32 @@ def day_planner
 end
 ```
 
-## Creating a client inline (planned; today the client must already exist)
-New clients will be created in the same transaction as the appointment, so a failed booking leaves no orphan client. `AppointmentsController#create` (current code, not pasted here to avoid drifting out of sync — see the file) builds the `Appointment` from the picked `service_id`s directly; it does not create anything besides the appointment itself. Inline client creation (wrapping `create` in `Appointment.transaction`, building `@appointment.client` from typed name/email/phone when no `client_id` is chosen) arrives with the client search box.
+## Client search ("Search or add a client")
+One text field (`app/views/appointments/_form.html.erb`), not a `<select>` — matches from `Client.matching(q).alphabetical.limit(5)` appear as you type (`AppointmentsController#client_search`, debounced 200ms in `booking_form_controller.js#searchClients`), with "+ Add "\<query\>" as a new client" always the last option. Picking an existing match sets a hidden `client_id`; picking "+ Add..." instead sets a hidden `new_client_name` and clears `client_id` — exactly one of the two is ever non-blank. Typing again (after either choice) clears both, forcing a fresh pick; there is no stale selection lying around behind a changed query.
+
+`AppointmentsController#create` resolves this in the same transaction as the appointment: if no `client_id` was set and `new_client_name` is present, it creates that `Client` (with `preferred_stylist` defaulted to the appointment's stylist, per the Rules below) before saving the appointment. If the appointment then fails to save for an unrelated reason (e.g. a time clash), the whole transaction rolls back — no orphan client left behind — and the failed `new_client_name` is threaded back through the redisplayed form so it isn't lost.
+
+**No duplicate check yet.** Adding "Jane Doe" when a client named (or matching) "Jane Doe" already exists just creates a second `Client` row — `Client.possible_duplicates_of` exists ([../clients/summary.md](../clients/summary.md)) but nothing calls it from this flow. That's the next task.
+
+```ruby
+# app/controllers/appointments_controller.rb (excerpt)
+def create
+  @appointment = Appointment.new(appointment_attributes)
+  @new_client_name = new_client_name
+
+  Appointment.transaction do
+    if @appointment.client.nil? && @new_client_name.present?
+      @appointment.client = Client.create!(name: @new_client_name, preferred_stylist: @appointment.stylist)
+    end
+    @appointment.save!
+  end
+
+  redirect_to root_path(date: @appointment.starts_at.to_date), notice: "Booked. ..."
+rescue ActiveRecord::RecordInvalid
+  @date = @appointment.starts_at&.to_date || Date.current
+  render :new, status: :unprocessable_entity
+end
+```
 
 ## Rules
 - `ends_at` is derived from `starts_at` plus the total of the services (see [../scheduling/overlap-prevention.md](../scheduling/overlap-prevention.md)).

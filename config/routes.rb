@@ -11,6 +11,7 @@ Rails.application.routes.draw do
 
   resources :appointments, only: [ :show, :new, :create ] do
     get :day_planner, on: :collection
+    get :client_search, on: :collection
   end
 
   root "calendar#index"
