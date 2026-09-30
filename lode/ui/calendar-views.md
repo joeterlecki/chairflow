@@ -12,23 +12,35 @@ Cards are placed with CSS grid rows computed from time, via `CalendarHelper` (`a
 
 ```erb
 <%# app/views/calendar/_column.html.erb (excerpt) %>
-<div class="grid gap-y-1" style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
-  <% appointments.each do |appointment| %>
-    <%= link_to appointment_path(appointment),
-          data: { turbo_frame: "modal" },
-          class: "block rounded-lg border-l-[3px] px-3 py-2 #{swatch_classes(stylist)}",
-          style: "grid-row: #{day_row_for(window, appointment.starts_at)} / span #{day_span_for(appointment.duration)}" do %>
-      <p class="font-medium text-ink"><%= appointment.client.name %></p>
-      <p class="text-sm text-muted">
-        <%= appointment.services.map(&:name).to_sentence %> · <%= appointment.starts_at.strftime("%-l:%M") %>
-      </p>
+<div id="stylist-column-<%= stylist.id %>" class="flex h-full flex-col">
+  <p>...stylist name and swatch dot...</p>
+
+  <div class="relative grid flex-1 gap-y-1 rounded-xl border border-line bg-surface"
+       style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
+    <% appointments.each do |appointment| %>
+      <%= link_to appointment_path(appointment),
+            data: { turbo_frame: "modal" },
+            class: "block rounded-lg border-l-[3px] px-3 py-2 #{swatch_classes(stylist)}",
+            style: "grid-row: #{day_row_for(window, appointment.starts_at)} / span #{day_span_for(appointment.duration)}" do %>
+        <p class="font-medium text-ink"><%= appointment.client.name %></p>
+        <p class="text-sm text-muted">
+          <%= appointment.services.map(&:name).to_sentence %> · <%= appointment.starts_at.strftime("%-l:%M") %>
+        </p>
+      <% end %>
     <% end %>
-  <% end %>
+  </div>
 </div>
 ```
 `window` is `SalonDay.hours_on(date)` (a `Range` of `TimeWithZone`, or `nil`). `day_row_for` = `((time - window.begin) / 15.minutes).to_i + 1`; `day_span_for` = `(duration / 15.minutes).ceil`. Each stylist column also carries `id="stylist-column-#{stylist.id}"` so tests can scope into it.
 
 **`gap-y-1` on the grid matters**: without it, two back-to-back appointments for the same stylist render with touching edges — visually one card, not two. A CSS Grid item that spans multiple row tracks absorbs any `row-gap` *within* its own span into its own height (so a single card stays one continuous box, not sliced by internal gaps); the gap only becomes visible at the boundary between two different items. That's why a uniform `gap-y-1` on the whole grid is enough — it doesn't need to be conditional on "is this card adjacent to another."
+
+**All three columns end at the same height, on purpose.** Each stylist's bordered box has its own `grid-template-rows` and sizes to its own content (`minmax(1.25rem, auto)` lets a row grow if a card needs more room than its nominal slot) — three independent grids with different appointments naturally compute different total heights. The outer day view's 3-column grid (`app/views/calendar/index.html.erb`) stretches each stylist's *wrapper* div to match the tallest one (CSS Grid's default `align-items: stretch`, since none of them declare an explicit height), but that stretch doesn't reach the bordered box nested one level inside the wrapper — it still sizes to its own content unless told otherwise. `flex h-full flex-col` on the wrapper plus `flex-1` on the bordered box closes that gap: the box grows to fill whatever height the wrapper was stretched to, so all three read as one continuous row of equal-height cards even when their appointment counts differ.
+
+**Deliberately no hour gridlines or a labeled time-axis gutter.** Considered and set aside: every card already states its own start time, a small salon's day is short enough not to need a ruler to stay oriented, and a persistent grid of hour lines would add visual density that cuts against this app's calm, minimal design language (see [../practices.md](../practices.md), [../summary.md](../summary.md)) for a problem this app doesn't clearly have. Hey Calendar's *week* view skips this entirely for the same reason; its day view does carry an hour ruler plus a current-time indicator, but that's a different, narrower idea — see "Later" below.
+
+## Later
+- A current-time indicator (a line across all stylist columns at "now," shown only when viewing today) — not built, but distinct from the gridlines idea above: it directly serves the "front desk lives in today... who's in now" principle in [../practices.md](../practices.md), rather than adding general-purpose visual density. Worth its own small task if picked up.
 
 ## Week overview (after MVP)
 Planned shape, for when it's picked up: one column per day showing each stylist's load and next opening, tapping through to the day. A single-stylist filter shows a full 7-column grid. The POC's 21-column grid is not repeated.
