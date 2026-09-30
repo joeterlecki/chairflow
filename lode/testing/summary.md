@@ -1,6 +1,6 @@
 # Testing strategy
 
-> Status: planned, not yet implemented.
+> Status: the harness is implemented (task 0.5): `test/application_system_test_case.rb` registers the `:playwright` driver, and `test/system/smoke_test.rb` is the one smoke test (visits `/up`, the Rails health check, since no app page exists yet). CI (`.github/workflows/ci.yml`, Rails' generated workflow) installs the matching Playwright browser before running `test:system`.
 
 We follow Kent C. Dodds' **testing trophy**: static checks at the base, a few unit tests, and **most confidence from end-to-end system tests** that use the app the way the front desk does.
 
@@ -12,8 +12,9 @@ flowchart BT
 
 ## Tools
 - **Minitest** (Rails default, confirmed) with fixtures.
-- **System tests** via Capybara driven by Playwright (`capybara-playwright-driver`). This keeps everything in Ruby with transactional fixtures, while using Playwright's browser engine.
-- CI: the GitHub Actions workflow that Rails 8 generates, with Playwright browsers installed.
+- **System tests** via Capybara driven by Playwright (`capybara-playwright-driver`, not `selenium-webdriver` — Rails' default `gem "selenium-webdriver"` was swapped out). This keeps everything in Ruby with transactional fixtures, while using Playwright's browser engine.
+- The Playwright *browser* (Chromium) must be installed separately from the gem, at the version `Playwright::COMPATIBLE_PLAYWRIGHT_VERSION` names (this machine already had it cached under `~/Library/Caches/ms-playwright`; a fresh machine needs `npx playwright@<version> install --with-deps chromium`).
+- CI: the GitHub Actions workflow Rails 8 generates (`.github/workflows/ci.yml`), with a step installing that Playwright browser before the `system-test` job's `bin/rails db:test:prepare test:system`.
 
 ```ruby
 # test/application_system_test_case.rb
@@ -27,7 +28,6 @@ class ApplicationSystemTestCase < ActionDispatch::SystemTestCase
   driven_by :playwright
 end
 ```
-Verify the driver setup and trace-on-failure API when scaffolding; this is a sketch.
 
 ## What gets which kind of test
 | Behavior | Test |
@@ -61,7 +61,7 @@ end
 ```
 
 ## Fixtures
-Fixtures mirror a realistic week: three stylists (Lauren, Melissa, Zoe), standard services, and a few clients with appointments. Salon days are open 8 AM to 6 PM every day, matching the seeds. The same data seeds development (`db/seeds.rb` loads fixtures).
+Fixtures mirror a realistic week: stylists Melissa and Devon (plus an inactive one, Pat, for `active`-scope tests), a few services, clients Ava and Noah, and a booked appointment (Ava with Melissa). `salon_days` fixtures cover an open Sunday and a closed Monday, rather than all seven days — see [../scheduling/salon-hours.md](../scheduling/salon-hours.md). `db/seeds.rb` is separate, not loaded from fixtures: it seeds three stylists (Melissa, Devon, Ari), five services, and all seven salon days open 8 AM to 6 PM.
 
 ## Per task
 Every roadmap task names its test under **Done when**. A task isn't done until that test is green in the same commit.

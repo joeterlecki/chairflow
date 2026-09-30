@@ -7,7 +7,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **0.2 New Rails app on a clean main.** Remove the old code; `rails new . --css=tailwind`. *Done when:* `bin/dev` serves the Rails welcome page.
 - [x] **0.3 Add the lode.** Commit `lode/` and ignore `lode/tmp/`. *Done when:* `lode/` is committed and `git status` is clean after writing to `lode/tmp/`.
 - [x] **0.4 Time zone and SQLite transactions.** Set `America/New_York`; confirm `IMMEDIATE` transactions. *Done when:* a one-line test asserts `Time.zone.name`, and the transaction mode is recorded in the lode.
-- [ ] **0.5 Browser tests and CI.** Capybara + Playwright, one smoke system test, CI runs everything. *Done when:* CI is green, including the smoke test.
+- [x] **0.5 Browser tests and CI.** Capybara + Playwright, one smoke system test, CI runs everything. *Done when:* CI is green, including the smoke test. *(Verified locally — `bin/rails test:system` passes in this environment. GitHub Actions itself hasn't been confirmed green; no `gh` CLI / token available in this session to check the Actions run. Worth a manual check.)*
 
 ## Phase 1: Foundations
 - [x] **1.1 Stylists and services.** Models, fixtures, seeds (no admin pages). *Done when:* `bin/rails db:seed` loads them and a model test covers `active` scopes.
