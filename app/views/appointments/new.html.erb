@@ -1,5 +1,10 @@
-<%= render "shared/page_header",
-      eyebrow: "New appointment",
-      headline: "Make room for someone." %>
+<%= turbo_frame_tag "modal" do %>
+  <dialog data-controller="modal" class="m-auto w-full max-w-md rounded-2xl border border-line bg-surface p-6 backdrop:bg-ink/40">
+    <p class="text-xs font-medium uppercase tracking-[0.25em] text-muted">New appointment</p>
+    <h2 class="mt-2 text-2xl font-semibold tracking-tight text-ink">Make room for someone.</h2>
 
-<%= render "form", appointment: @appointment %>
+    <div class="mt-4">
+      <%= render "form", appointment: @appointment %>
+    </div>
+  </dialog>
+<% end %>

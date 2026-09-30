@@ -36,6 +36,8 @@ Planned shape, for when it's picked up: one column per day showing each stylist'
 
 Still planned: visit notes, contact as `mailto:`/`tel:` links, client preference, **Edit appointment**, **Cancel appointment**, and **Book again** (prefills client, stylist, and service) — each arrives with its own roadmap task.
 
+**New appointment reuses this same modal mechanism** (`modal` Turbo Frame, `<dialog data-controller="modal">`, `m-auto` centering) — see [../booking/summary.md](../booking/summary.md) for why the form and its "Never mind" link both need `data: { turbo_frame: "_top" }` to break out of the frame on submit/cancel, which "Done" above also relies on.
+
 ```mermaid
 stateDiagram-v2
   [*] --> DayView

@@ -1,6 +1,6 @@
 # Booking flow
 
-> Status: the simplest case is implemented — an existing client, one service, a typed date and time (`appointments#new`/`#create`, `resources :appointments, only: [:show, :new, :create]`). Not yet built: several services (add/remove rows), the day planner, client search + inline creation, the duplicate warning, and friendly clash handling (today a clash just re-renders the form with `Appointment`'s existing validation message via `shared/_errors`). The order below is the agreed target shape; what's built so far is a plain form, not this flow.
+> Status: the simplest case is implemented — an existing client, one service, a typed date and time (`appointments#new`/`#create`, `resources :appointments, only: [:show, :new, :create]`), opening as a modal like appointment detail (see below). Not yet built: several services (add/remove rows), the day planner, client search + inline creation, the duplicate warning, and friendly clash handling (today a clash just re-renders the form with `Appointment`'s existing validation message via `shared/_errors`). The order below is the agreed target shape; what's built so far is a plain form, not this flow.
 
 ## Intent
 Follow how the conversation at the desk goes: *"She wants a cut and a gloss, ideally with Melissa, sometime Wednesday."* The front desk and stylists both book, so the flow must be quick on a phone between clients too.
@@ -29,6 +29,11 @@ flowchart TD
   B -->|valid| OK[Day view, flash, new card highlighted]
   B -->|clash| ERR[Kind error, planner refreshed]
 ```
+
+## New appointment is a modal, like appointment detail
+Consistent with [../ui/calendar-views.md](../ui/calendar-views.md)'s appointment detail dialog — same `modal` Turbo Frame, same `<dialog data-controller="modal">` (`showModal()` on connect), same centering fix (`m-auto`, since Tailwind's preflight strips the browser default). The day view's "+ New appointment" link carries `data: { turbo_frame: "modal" }` to load `appointments/new` into the frame.
+
+The form itself (`app/views/appointments/_form.html.erb`) needs `data: { turbo_frame: "_top" }` on `form_with` — without it, Turbo scopes the submission response to the `modal` frame it's nested in, which is wrong for *both* outcomes: a successful `create` redirects to `root_path` (the whole calendar should update, not just the frame), and a failed one re-renders `:new` with errors (still a full page render with layout, meant to replace the whole document, not be spliced into the existing frame). "Never mind" needs the same `data: { turbo_frame: "_top" }` on its `link_to`, for the same reason — without it, cancelling would fetch `root_path` and splice only its (empty) `modal` frame back in, rather than doing a real navigation back to the calendar.
 
 ## Services as nested fields
 Services are `appointment_services` nested attributes (`form.fields_for :appointment_services`, matching `Appointment#accepts_nested_attributes_for`). Today `app/views/appointments/_form.html.erb` renders exactly one line (`@appointment.appointment_services.build` in `new`, with `position` hardcoded to `1` in a hidden field) — client, stylist, and service are all plain styled `collection_select`s (see [../ui/design-tokens.md](../ui/design-tokens.md) for `select_chevron`), and the moment is one `datetime_local_field` the front desk types into directly. Add/remove rows, below, is still planned.

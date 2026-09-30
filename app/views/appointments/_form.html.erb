@@ -1,4 +1,4 @@
-<%= form_with model: appointment do |form| %>
+<%= form_with model: appointment, data: { turbo_frame: "_top" } do |form| %>
   <%= render "shared/errors", object: appointment %>
 
   <div class="mb-4 max-w-md">
@@ -39,6 +39,8 @@
 
   <div class="flex items-center gap-3">
     <%= form.submit "Book appointment", class: "rounded-xl bg-pine px-4 py-2 text-white hover:bg-pine-hover" %>
-    <%= link_to "Never mind", root_path, class: "rounded-xl border border-line bg-surface px-4 py-2 text-ink" %>
+    <%= link_to "Never mind", root_path,
+          data: { turbo_frame: "_top" },
+          class: "rounded-xl border border-line bg-surface px-4 py-2 text-ink" %>
   </div>
 <% end %>

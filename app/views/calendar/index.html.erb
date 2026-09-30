@@ -16,7 +16,9 @@
   </div>
   <div class="flex items-center gap-4">
     <p class="text-sm text-muted"><%= pluralize(@appointments.count, "appointment") %></p>
-    <%= link_to "+ New appointment", new_appointment_path, class: "rounded-lg bg-pine px-3 py-1.5 text-sm text-white hover:bg-pine-hover" %>
+    <%= link_to "+ New appointment", new_appointment_path,
+          data: { turbo_frame: "modal" },
+          class: "rounded-lg bg-pine px-3 py-1.5 text-sm text-white hover:bg-pine-hover" %>
   </div>
 </div>
 
