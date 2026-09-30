@@ -36,3 +36,7 @@
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
+# Lode session scraps are not permanent project memory.
+/lode/tmp/*
+!/lode/tmp/.keep
