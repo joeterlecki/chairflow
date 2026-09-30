@@ -13,14 +13,3 @@ module ActiveSupport
     # Add more helper methods to be used by all tests here...
   end
 end
-
-class ActionDispatch::IntegrationTest
-  setup do
-    SessionsController.cache_store.clear
-    post login_path, params: { username: "admin", password: "studio-test-password" } if authenticate_for_test?
-  end
-
-  def authenticate_for_test?
-    true
-  end
-end

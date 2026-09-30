@@ -1,17 +1,14 @@
 Rails.application.routes.draw do
-  root "calendar#index"
-  get "login", to: "sessions#new", as: :login
-  post "login", to: "sessions#create"
-  delete "logout", to: "sessions#destroy", as: :logout
-  get "team_schedule", to: "stylists#index", as: :team_schedule
-  resources :stylists, only: %i[index edit update] do
-    resource :shift, controller: "scheduled_shifts", only: %i[edit update destroy]
-  end
-  resources :time_offs, only: %i[new create destroy]
-  resources :services, only: %i[index edit update]
-  resources :clients, only: %i[index new create edit update]
-  resources :appointments, except: :index do
-    get :availability, on: :collection
-  end
+  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
+
+  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
+  # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
+  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
+  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+
+  # Defines the root path route ("/")
+  # root "posts#index"
 end
