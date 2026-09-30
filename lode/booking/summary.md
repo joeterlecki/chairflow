@@ -79,6 +79,8 @@ Tapping a slot button doesn't submit a hidden field — it directly sets the vis
 
 The planner's date comes from the day you were viewing when you opened "+ New appointment" (`new_appointment_path(date: ...)`, defaulting to today), not a separate date picker in the form — see [../ui/calendar-views.md](../ui/calendar-views.md) for the day view side of that link.
 
+**Smooth resize, not a sudden jump.** The frame's content is replaced wholesale on every reload (placeholder text one moment, a grid of slot buttons the next) — a plain CSS `transition` can't animate that, because it only interpolates a property changing on an element that persists, and Turbo replaces the frame's *children*, not the `<turbo-frame>` element itself. That persisting element is exactly what `booking_form_controller.js` animates instead (a FLIP): `turbo:before-frame-render` captures the frame's current `offsetHeight`; `turbo:frame-render` (fires right after the swap) reads the new natural `scrollHeight`, sets the frame's height back to the *old* value, forces a layout (reading `offsetHeight` again) so the browser registers that starting point, then transitions to the new height over 200ms and clears the inline styles on `transitionend`.
+
 ```ruby
 # app/controllers/appointments_controller.rb (excerpt)
 def day_planner

@@ -9,6 +9,18 @@ export default class extends Controller {
 
   connect() {
     this.updateTotal()
+
+    if (this.hasPlannerFrameTarget) {
+      this.plannerFrameTarget.addEventListener("turbo:before-frame-render", this.capturePlannerHeight)
+      this.plannerFrameTarget.addEventListener("turbo:frame-render", this.animatePlannerHeight)
+    }
+  }
+
+  disconnect() {
+    if (this.hasPlannerFrameTarget) {
+      this.plannerFrameTarget.removeEventListener("turbo:before-frame-render", this.capturePlannerHeight)
+      this.plannerFrameTarget.removeEventListener("turbo:frame-render", this.animatePlannerHeight)
+    }
   }
 
   add(event) {
@@ -59,5 +71,33 @@ export default class extends Controller {
 
   totalMinutes() {
     return this.durationTargets.reduce((sum, input) => sum + (parseInt(input.value, 10) || 0), 0)
+  }
+
+  // The <turbo-frame> element itself persists across a frame navigation -- only
+  // its content is swapped -- so its height can be animated (a FLIP) even
+  // though a plain CSS transition can't apply to content that's replaced
+  // wholesale rather than mutated in place.
+  capturePlannerHeight = () => {
+    this.plannerPreviousHeight = this.plannerFrameTarget.offsetHeight
+  }
+
+  animatePlannerHeight = () => {
+    const frame = this.plannerFrameTarget
+    const previousHeight = this.plannerPreviousHeight
+    if (previousHeight == null) return
+
+    const newHeight = frame.scrollHeight
+    frame.style.overflow = "hidden"
+    frame.style.height = `${previousHeight}px`
+    frame.offsetHeight // force layout, so the browser registers the starting height before animating
+    frame.style.transition = "height 200ms ease"
+    requestAnimationFrame(() => {
+      frame.style.height = `${newHeight}px`
+    })
+    frame.addEventListener("transitionend", () => {
+      frame.style.height = ""
+      frame.style.overflow = ""
+      frame.style.transition = ""
+    }, { once: true })
   }
 }
