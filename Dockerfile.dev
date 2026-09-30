@@ -1,0 +1,33 @@
+# syntax=docker/dockerfile:1
+
+# Development image: full bundle (including test group), Playwright's Chromium for
+# system tests, and live code via a bind mount in compose.yaml. Not for deployment;
+# see Dockerfile for the production image.
+
+ARG RUBY_VERSION=3.4.11
+FROM docker.io/library/ruby:$RUBY_VERSION-slim
+
+WORKDIR /rails
+
+# System packages: Rails runtime needs, gem native-extension build tools, and
+# Node.js (nodejs/npm) so npx can fetch the Playwright CLI matching the gem version.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      build-essential curl git libvips libyaml-dev pkg-config sqlite3 nodejs npm && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
+
+ENV RAILS_ENV="development" \
+    BUNDLE_PATH="/usr/local/bundle"
+
+COPY Gemfile Gemfile.lock ./
+RUN bundle install
+
+# Playwright's browser binary is separate from the gem; install the version the
+# gem expects, with the OS libraries Chromium needs (--with-deps).
+RUN bundle exec ruby -e 'require "playwright"; puts Playwright::COMPATIBLE_PLAYWRIGHT_VERSION.strip' > /tmp/playwright_version && \
+    npx --yes "playwright@$(cat /tmp/playwright_version)" install --with-deps chromium
+
+COPY . .
+
+EXPOSE 3000
+CMD ["bin/dev"]

@@ -17,7 +17,7 @@ Each task states:
 The loop for every task:
 1. Pick the next unchecked task. Discuss it briefly, then agree on the approach.
 2. Implement, then write or extend its test.
-3. Run `bin/rails test:all` (includes system tests) and `bin/rubocop`, both green.
+3. Run `just ci` (setup, rubocop, security audits, and the full test suite including system tests — see `config/ci.rb`), green.
 4. Update the lode in the **same commit** so it matches the code.
 5. The owner reviews. On "looks good", commit and tick the task.
 
@@ -38,6 +38,14 @@ Two booked appointments for one stylist must never overlap. SQLite has
 no exclusion constraints, so the model enforces it inside an IMMEDIATE
 transaction. Back-to-back appointments are allowed (half-open ranges).
 ```
+
+## Running things
+Everything runs in Docker via `compose.yaml` (`Dockerfile.dev`: full bundle including test-group gems, Playwright's Chromium, working directory bind-mounted for live edits), fronted by a `justfile`:
+- `just up` / `just down` — dev server at `localhost:3000`, detached; `just logs` to follow it.
+- `just ci` — the full check (setup, rubocop, security audits, tests including system tests); run before calling a task done.
+- `just test`, `just lint`, `just security`, `just console`, `just sh`, `just setup` — the individual pieces of `ci`, for faster iteration.
+
+`Dockerfile` (no `.dev` suffix) is the separate production image — see [deployment/summary.md](deployment/summary.md).
 
 ## Stack (Rails omakase)
 | Concern | Choice |

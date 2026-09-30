@@ -5,7 +5,7 @@
 We mostly follow [12-factor app](https://12factor.net) principles, with one deliberate deviation on logging.
 
 ## Where we agree with 12-factor
-- **Containers.** `Dockerfile` (multi-stage, production-oriented) and `config/deploy.yml` (Kamal) ship with the app from `rails new`. Build: `docker build -t chairflow .`
+- **Containers.** `Dockerfile` (multi-stage, production-oriented) and `config/deploy.yml` (Kamal) ship with the app from `rails new`. Build: `docker build -t chairflow .` For local development, `Dockerfile.dev` and `compose.yaml` build a separate image with the full bundle (including test-group gems) and Playwright's Chromium, bind-mounting the working directory for live code changes. `justfile` wraps both the compose lifecycle and the verification commands — see [../practices.md](../practices.md) for the recipes.
 - **Config via environment variables**, for things that vary by deploy: `RAILS_MAX_THREADS` (`config/database.yml`), `RAILS_LOG_LEVEL` and `RAILS_MASTER_KEY` (`config/environments/production.rb`, `Dockerfile`). New config that varies per environment (API keys, external service URLs, feature flags) follows this pattern: `ENV.fetch("THING") { default }`, never hardcoded.
 - **Reasonable defaults.** Rails omakase itself: SQLite, Solid Queue/Cache/Cable, Puma, Kamal — see [../practices.md](../practices.md)'s stack table. We don't swap these out without a reason recorded here.
 
