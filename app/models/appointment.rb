@@ -8,6 +8,7 @@ class Appointment < ApplicationRecord
   enum :status, { booked: "booked", cancelled: "cancelled" }, default: :booked
 
   scope :overlapping, ->(from, to) { where("starts_at < ? AND ends_at > ?", to, from) }
+  scope :on, ->(date) { where(starts_at: date.in_time_zone.all_day) }
 
   before_validation :derive_ends_at
   validates :starts_at, presence: true

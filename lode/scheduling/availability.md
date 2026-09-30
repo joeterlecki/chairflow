@@ -1,6 +1,6 @@
 # Availability (open slots)
 
-> Status: planned, not yet implemented.
+> Status: implemented (task 1.6), as a plain PORO (`app/models/availability.rb`), not an `ActiveRecord::Base`. Used by nothing yet — the day planner that calls it is still planned (task 3.3).
 
 `Availability` answers: *for this stylist, on this date, for this long, which start times are open?* It feeds the day planner.
 
@@ -35,12 +35,15 @@ class Availability
               .take_while { |t| t + @duration <= window.end }
   end
 
-  def overlaps?(a, b) = a.begin < b.end && b.begin < a.end
+  def overlaps?(a, b)
+    a.begin < b.end && b.begin < a.end
+  end
 end
 ```
+(Regular `def...end`, not endless methods, to match this project's rubocop-rails-omakase style.)
 
 ```ruby
-# app/models/appointment.rb (excerpt)
+# app/models/appointment.rb (excerpt, alongside :overlapping from overlap-prevention.md)
 scope :on, ->(date) { where(starts_at: date.in_time_zone.all_day) }
 ```
 
@@ -55,9 +58,10 @@ gantt
   Open from 12:00  :active, 12:00, 6h
 ```
 
-## Edge cases to test (unit)
+## Edge cases (unit-tested in `test/models/availability_test.rb`)
+- A closed day returns `[]`.
 - A duration longer than any gap returns `[]`.
 - A slot ending exactly at closing time is open.
 - A slot starting exactly when an appointment ends is open.
 - Cancelled appointments don't block.
-- 45-minute totals on the 15-minute grid.
+- 45-minute totals land on the 15-minute grid.
