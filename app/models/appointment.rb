@@ -35,7 +35,7 @@ class Appointment < ApplicationRecord
     clash = stylist.appointments.booked.overlapping(starts_at, ends_at).where.not(id: id).first
     return unless clash
 
-    errors.add(:starts_at,
+    errors.add(:base,
       "#{stylist.name} is with #{clash.client.name} until #{clash.ends_at.strftime('%-l:%M %p')}.")
   end
 end

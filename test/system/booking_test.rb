@@ -239,6 +239,26 @@ class BookingTest < ApplicationSystemTestCase
     assert_equal count_before + 1, Client.count
   end
 
+  test "attempting a clash shows the friendly message, not a generic form error" do
+    travel_to Time.zone.parse("2026-10-01 08:00") do
+      existing = appointments(:ava_visit) # Melissa, 9:00-9:45
+
+      visit root_path
+      click_on "+ New appointment"
+
+      within "dialog" do
+        pick_existing_client("Noah Carter")
+        select "Melissa", from: "Stylist"
+        select "Blowout", from: "Service"
+        fill_in "Time", with: "2026-10-01T09:15" # overlaps the existing appointment
+        click_on "Book appointment"
+
+        assert_text "Melissa is with Ava Thompson until #{existing.ends_at.strftime('%-l:%M %p')}."
+        assert_no_text "Starts at"
+      end
+    end
+  end
+
   test "Never mind closes the new appointment dialog without booking anything" do
     visit root_path
     click_on "+ New appointment"

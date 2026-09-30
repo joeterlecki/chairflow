@@ -69,7 +69,7 @@ class AppointmentTest < ActiveSupport::TestCase
     appointment.appointment_services.build(service: services(:blowout), position: 1, duration_minutes: 30)
 
     assert_not appointment.valid?
-    assert_includes appointment.errors[:starts_at], "#{existing.stylist.name} is with #{existing.client.name} until #{existing.ends_at.strftime('%-l:%M %p')}."
+    assert_includes appointment.errors[:base], "#{existing.stylist.name} is with #{existing.client.name} until #{existing.ends_at.strftime('%-l:%M %p')}."
   end
 
   test "cancelled appointments don't block the same time" do

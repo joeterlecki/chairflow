@@ -27,11 +27,13 @@ def stylist_is_free
   clash = stylist.appointments.booked.overlapping(starts_at, ends_at).where.not(id: id).first
   return unless clash
 
-  errors.add(:starts_at,
+  errors.add(:base,
     "#{stylist.name} is with #{clash.client.name} until #{clash.ends_at.strftime('%-l:%M %p')}.")
 end
 ```
 `where.not(id: id)` is `nil`-safe: for an unsaved appointment it becomes `WHERE id IS NOT NULL`, which excludes nothing (there is no self-row yet).
+
+**The error goes on `:base`, not `:starts_at`.** Rails' `full_messages` (what `shared/_errors` renders) prefixes a field error with that field's humanized name — `errors.add(:starts_at, "Melissa is with...")` becomes "Starts at Melissa is with Ava Thompson until 9:45 AM.", which reads as broken English despite the message itself being exactly the friendly sentence intended. `:base` is the one attribute Rails' `full_message` never prefixes, which is also why `has_a_service` above uses it for "Choose at least one service."
 
 ```mermaid
 sequenceDiagram
