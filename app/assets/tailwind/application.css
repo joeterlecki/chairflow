@@ -16,3 +16,11 @@
   --color-sky-soft: #e4edf3;      --color-sky: #7f9fb8;
   --color-sand-soft: #f2ecdc;     --color-sand: #bba36e;
 }
+
+/* Turbo sets [busy] on a <turbo-frame> for the duration of a fetch. Dimming it
+   gives a graceful "this is updating" cue without a spinner, which would
+   mostly just flash in and out given how fast a local frame reload is. */
+turbo-frame[busy] {
+  opacity: 0.6;
+  transition: opacity 150ms ease;
+}

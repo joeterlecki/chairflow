@@ -8,7 +8,8 @@ export default class extends Controller {
   static targets = ["rows", "template", "row", "duration", "total", "stylist", "plannerFrame", "startsAt"]
 
   connect() {
-    this.updateTotal()
+    this.totalTarget.textContent = `${this.totalMinutes()} min`
+    this.plannerInitialized = false
 
     if (this.hasPlannerFrameTarget) {
       this.plannerFrameTarget.addEventListener("turbo:before-frame-render", this.capturePlannerHeight)
@@ -77,19 +78,36 @@ export default class extends Controller {
   // its content is swapped -- so its height can be animated (a FLIP) even
   // though a plain CSS transition can't apply to content that's replaced
   // wholesale rather than mutated in place.
+  //
+  // The lock has to happen here, in the *before* handler -- not in the *after*
+  // handler once the new content already exists. Locking after the swap means
+  // the browser has already painted the new (differently-sized) content for a
+  // moment before JS clips it back down, which is the shrink-then-expand jerk.
+  // Skipped entirely on the very first load: there's no prior state to
+  // transition from, so animating it just produces an unwanted pop.
   capturePlannerHeight = () => {
-    this.plannerPreviousHeight = this.plannerFrameTarget.offsetHeight
+    if (!this.plannerInitialized) return
+
+    const frame = this.plannerFrameTarget
+    this.plannerPreviousHeight = frame.offsetHeight
+    frame.style.transition = "none"
+    frame.style.overflow = "hidden"
+    frame.style.height = `${this.plannerPreviousHeight}px`
   }
 
   animatePlannerHeight = () => {
     const frame = this.plannerFrameTarget
-    const previousHeight = this.plannerPreviousHeight
-    if (previousHeight == null) return
 
+    if (!this.plannerInitialized) {
+      this.plannerInitialized = true
+      return
+    }
+
+    frame.style.transition = "none"
+    frame.style.height = "auto"
     const newHeight = frame.scrollHeight
-    frame.style.overflow = "hidden"
-    frame.style.height = `${previousHeight}px`
-    frame.offsetHeight // force layout, so the browser registers the starting height before animating
+    frame.style.height = `${this.plannerPreviousHeight}px`
+    frame.offsetHeight // force layout, so the browser registers the locked height before animating
     frame.style.transition = "height 200ms ease"
     requestAnimationFrame(() => {
       frame.style.height = `${newHeight}px`
