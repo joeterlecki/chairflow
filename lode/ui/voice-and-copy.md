@@ -1,6 +1,6 @@
 # Voice and copy
 
-> Status: agreed direction; page copy below is proposed and can change freely.
+> Status: `shared/_page_header.html.erb` below is implemented verbatim (task 2.2). Page copy in the table is proposed and can change freely as pages are actually built; only Calendar (day)'s row is in use so far.
 
 This file is written for the agent: **use these patterns when adding or changing any page.**
 

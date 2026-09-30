@@ -1,1 +1,18 @@
 @import "tailwindcss";
+
+@theme {
+  --color-canvas: #f5f4f0;   /* page background, warm off-white */
+  --color-surface: #ffffff;  /* cards, dialogs */
+  --color-line: #e7e5e0;     /* hairlines and borders */
+  --color-ink: #1f2421;      /* primary text */
+  --color-muted: #77776f;    /* secondary text, eyebrows */
+  --color-pine: #2f4a3f;     /* the one accent: primary buttons, today marker */
+  --color-pine-hover: #253b32;
+
+  /* stylist swatches: soft fill + stronger edge */
+  --color-lavender-soft: #ece8f4; --color-lavender: #9c93c4;
+  --color-sage-soft: #e8efe9;     --color-sage: #7fa08a;
+  --color-clay-soft: #f3e6dd;     --color-clay: #c99273;
+  --color-sky-soft: #e4edf3;      --color-sky: #7f9fb8;
+  --color-sand-soft: #f2ecdc;     --color-sand: #bba36e;
+}

@@ -1,6 +1,6 @@
 # Design tokens
 
-> Status: planned. The values are approximations from the POC screenshots; tune them in the browser.
+> Status: the `@theme` block below is implemented verbatim in `app/assets/tailwind/application.css` (task 2.2). `StylistsHelper`/`SWATCH_CLASSES` is still planned — no view uses stylist swatches yet. The values are approximations from the POC screenshots; tune them in the browser.
 
 ## Theme (Tailwind v4)
 Tokens live in the Tailwind entry file as `@theme` variables, so utilities like `bg-canvas` and `text-muted` exist.

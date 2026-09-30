@@ -23,9 +23,12 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <main class="container mx-auto mt-28 px-5 flex">
+  <body class="bg-canvas text-ink antialiased">
+    <%= render "shared/nav" %>
+    <main class="mx-auto max-w-6xl px-6 py-12">
+      <%= render "shared/flash" %>
       <%= yield %>
     </main>
+    <%= turbo_frame_tag "modal" %>
   </body>
 </html>

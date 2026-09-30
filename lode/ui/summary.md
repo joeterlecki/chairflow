@@ -1,6 +1,6 @@
 # UI overview
 
-> Status: planned, not yet implemented. The POC screenshots are the layout inspiration; this is a fresh build.
+> Status: the page skeleton is implemented (task 2.2) — layout, nav, page header partial, flash, Tailwind tokens. The nav currently shows only **Calendar** (the only page that exists); **Clients** and **Salon hours** are added to `shared/_nav.html.erb` when those controllers exist (phase 5), not before — a nav link to a route that doesn't exist yet would break the page it's on. Calendar's actual day-view content (stylist columns, appointment cards) is still planned (task 2.3); right now `calendar#index` renders only the page header.
 
 chairflow looks like a well-kept paper appointment book: a warm off-white page, one deep pine-green accent, soft stylist swatches, and plenty of room. It should feel calm at 9 AM on a busy Saturday.
 
