@@ -1,6 +1,6 @@
 # Overlap prevention (no double-booking)
 
-> Status: planned, not yet implemented. `Appointment` itself (client/stylist, derived `ends_at`, `booked`/`cancelled` status) already exists — see [summary.md](summary.md); this file covers the `scope :overlapping` and `stylist_is_free` validation still to add.
+> Status: implemented (task 1.4), on top of the `Appointment` model from [summary.md](summary.md).
 
 ## The rule
 Two `booked` appointments for the same stylist must never overlap. Intervals are half-open, so one ending at 10:00 and another starting at 10:00 is fine. This is the one scheduling rule that **blocks** rather than warns, because a double-booking corrupts the book.
@@ -16,23 +16,22 @@ SQLite has no exclusion constraints, so the model enforces the rule. It must be 
 3. Rails 8's SQLite adapter starts transactions as `IMMEDIATE`, which takes the write lock at `BEGIN`, so a second writer waits and then sees the first appointment. **Confirmed (task 0.4):** `SQLite3Adapter` hardcodes `default_transaction_mode: :immediate` unconditionally in its connection parameters (`activerecord-8.1.4/lib/active_record/connection_adapters/sqlite3_adapter.rb`) — no `config/database.yml` change needed or possible to override.
 
 ```ruby
-# app/models/appointment.rb (additions on top of the existing model, see summary.md)
-class Appointment < ApplicationRecord
-  scope :overlapping, ->(from, to) { where("starts_at < ? AND ends_at > ?", to, from) }
+# app/models/appointment.rb (excerpt; full model in scheduling/summary.md)
+scope :overlapping, ->(from, to) { where("starts_at < ? AND ends_at > ?", to, from) }
 
-  validate :stylist_is_free, if: -> { booked? && stylist && starts_at && ends_at }
+validate :stylist_is_free, if: -> { booked? && stylist && starts_at && ends_at }
 
-  private
+private
 
-  def stylist_is_free
-    clash = stylist.appointments.booked.overlapping(starts_at, ends_at).where.not(id: id).first
-    return unless clash
+def stylist_is_free
+  clash = stylist.appointments.booked.overlapping(starts_at, ends_at).where.not(id: id).first
+  return unless clash
 
-    errors.add(:starts_at,
-      "#{stylist.name} is with #{clash.client.name} until #{clash.ends_at.strftime('%-l:%M %p')}.")
-  end
+  errors.add(:starts_at,
+    "#{stylist.name} is with #{clash.client.name} until #{clash.ends_at.strftime('%-l:%M %p')}.")
 end
 ```
+`where.not(id: id)` is `nil`-safe: for an unsaved appointment it becomes `WHERE id IS NOT NULL`, which excludes nothing (there is no self-row yet).
 
 ```mermaid
 sequenceDiagram

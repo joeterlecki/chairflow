@@ -1,6 +1,6 @@
 # Scheduling
 
-> Status: `Stylist`, `Service`, `Appointment`, and `AppointmentService` are implemented (tasks 1.1, 1.3), including derived `ends_at` and the `booked`/`cancelled` status. Overlap prevention (1.4), salon days (1.5), and availability (1.6) are still planned. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
+> Status: `Stylist`, `Service`, `Appointment`, and `AppointmentService` are implemented (tasks 1.1, 1.3-1.4), including derived `ends_at`, the `booked`/`cancelled` status, and overlap prevention. Salon days (1.5) and availability (1.6) are still planned. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
 
 ## MVP rules
 1. **Salon hours**, set by the salon on the Salon hours page (default 8 AM to 6 PM every day), are the only bookable window, the same for every stylist. See [salon-hours.md](salon-hours.md).
@@ -44,7 +44,7 @@ create_table :appointment_services do |t|
 end
 ```
 
-`ends_at` is stored so overlap queries stay simple and indexable. `Appointment#derive_ends_at` (a `before_validation`) sets it to `starts_at + duration`, where `duration` sums the (non-destroyed) `appointment_services`' `duration_minutes`; it is never typed by hand. An appointment with no services is invalid (`has_a_service`, error on `:base`). `AppointmentService#duration_minutes` defaults from `service.default_duration_minutes` when left blank, and can be overridden per visit. `Appointment.status` is an enum (`booked` default, `cancelled`); overlap prevention for `booked` appointments is [overlap-prevention.md](overlap-prevention.md), not yet implemented.
+`ends_at` is stored so overlap queries stay simple and indexable. `Appointment#derive_ends_at` (a `before_validation`) sets it to `starts_at + duration`, where `duration` sums the (non-destroyed) `appointment_services`' `duration_minutes`; it is never typed by hand. An appointment with no services is invalid (`has_a_service`, error on `:base`). `AppointmentService#duration_minutes` defaults from `service.default_duration_minutes` when left blank, and can be overridden per visit. `Appointment.status` is an enum (`booked` default, `cancelled`); overlap prevention for `booked` appointments (`scope :overlapping`, `stylist_is_free`) is implemented, see [overlap-prevention.md](overlap-prevention.md).
 
 ```mermaid
 flowchart TD

@@ -7,9 +7,12 @@ class Appointment < ApplicationRecord
 
   enum :status, { booked: "booked", cancelled: "cancelled" }, default: :booked
 
+  scope :overlapping, ->(from, to) { where("starts_at < ? AND ends_at > ?", to, from) }
+
   before_validation :derive_ends_at
   validates :starts_at, presence: true
   validate :has_a_service
+  validate :stylist_is_free, if: -> { booked? && stylist && starts_at && ends_at }
 
   def duration
     appointment_services.reject(&:marked_for_destruction?).sum(&:duration_minutes).minutes
@@ -23,5 +26,13 @@ class Appointment < ApplicationRecord
 
   def has_a_service
     errors.add(:base, "Choose at least one service.") if duration.zero?
+  end
+
+  def stylist_is_free
+    clash = stylist.appointments.booked.overlapping(starts_at, ends_at).where.not(id: id).first
+    return unless clash
+
+    errors.add(:starts_at,
+      "#{stylist.name} is with #{clash.client.name} until #{clash.ends_at.strftime('%-l:%M %p')}.")
   end
 end
