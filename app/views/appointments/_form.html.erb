@@ -19,17 +19,32 @@
     </div>
   </div>
 
-  <%= form.fields_for :appointment_services do |line| %>
-    <div class="mb-4 max-w-md">
-      <%= line.label :service_id, "Service", class: "mb-1 block text-sm font-medium text-ink" %>
-      <div class="relative">
-        <%= line.collection_select :service_id, Service.active, :id, :name, { prompt: true },
-              class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink" %>
-        <%= select_chevron %>
-      </div>
-      <%= line.hidden_field :position, value: 1 %>
+  <datalist id="services-datalist">
+    <% Service.active.each do |service| %>
+      <option value="<%= service.name %>"></option>
+    <% end %>
+  </datalist>
+
+  <div class="mb-6 max-w-md" data-controller="service-lines">
+    <div data-service-lines-target="rows">
+      <%= form.fields_for :appointment_services do |line| %>
+        <%= render "service_line", line: line %>
+      <% end %>
     </div>
-  <% end %>
+
+    <template data-service-lines-target="template">
+      <%= form.fields_for :appointment_services, AppointmentService.new, child_index: "NEW_RECORD" do |line| %>
+        <%= render "service_line", line: line %>
+      <% end %>
+    </template>
+
+    <div class="flex items-center justify-between">
+      <button type="button" data-action="service-lines#add" class="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink">
+        + Add a service
+      </button>
+      <p class="text-sm text-muted">Total: <span data-service-lines-target="total">0 min</span></p>
+    </div>
+  </div>
 
   <div class="mb-6 max-w-md">
     <%= form.label :starts_at, "Time", class: "mb-1 block text-sm font-medium text-ink" %>
