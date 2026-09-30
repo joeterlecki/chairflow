@@ -19,3 +19,7 @@ end
 ].each do |attrs|
   Service.find_or_create_by!(name: attrs[:name]) { |s| s.default_duration_minutes = attrs[:default_duration_minutes] }
 end
+
+(0..6).each do |wday|
+  SalonDay.find_or_create_by!(wday: wday) { |day| day.opens_minute = 480; day.closes_minute = 1080 }
+end

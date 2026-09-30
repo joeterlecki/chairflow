@@ -1,6 +1,6 @@
 # Salon hours
 
-> Status: planned, not yet implemented.
+> Status: `SalonDay` is implemented and seeded (task 1.5, all seven days open 8-6). The Salon hours page (controller/view below) is still planned (task 5.4).
 
 The salon sets its own opening hours on the **Salon hours** page. In the MVP, these hours are the single bookable window for every stylist. Defaults: **every day, 8:00 AM to 6:00 PM** Eastern, until the salon changes them.
 
@@ -35,30 +35,38 @@ class SalonDay < ApplicationRecord
     day.range_on(date) unless day.nil? || day.closed?
   end
 
-  def self.week_from_monday = all.sort_by { |day| (day.wday - 1) % 7 }
+  def self.week_from_monday
+    all.sort_by { |day| (day.wday - 1) % 7 }
+  end
 
-  def range_on(date) = wall_clock(date, opens_minute)...wall_clock(date, closes_minute)
+  def range_on(date)
+    wall_clock(date, opens_minute)...wall_clock(date, closes_minute)
+  end
 
   private
 
   # Sets the local wall clock; never add minutes to midnight (wrong on DST days).
-  def wall_clock(date, minute) = date.in_time_zone.change(hour: minute / 60, min: minute % 60)
+  def wall_clock(date, minute)
+    date.in_time_zone.change(hour: minute / 60, min: minute % 60)
+  end
 
   def closes_after_opens
-    errors.add(:closes_minute, "needs to be after opening") if closes_minute <= opens_minute
+    errors.add(:closes_minute, "needs to be after opening") if closes_minute && opens_minute && closes_minute <= opens_minute
   end
 
   def on_the_slot_grid
-    return if [opens_minute, closes_minute].all? { |m| (m % STEP).zero? }
+    return if [ opens_minute, closes_minute ].compact.all? { |m| (m % STEP).zero? }
+
     errors.add(:base, "Times need to be on the quarter hour")
   end
 end
 ```
+(Written as regular `def...end` rather than endless methods, and with nil-guards in the two custom validations, to match this project's rubocop-rails-omakase style.)
 
 ```ruby
 # db/seeds.rb (excerpt): all seven days, 8 to 6
 (0..6).each do |wday|
-  SalonDay.find_or_create_by!(wday:) { |day| day.opens_minute = 480; day.closes_minute = 1080 }
+  SalonDay.find_or_create_by!(wday: wday) { |day| day.opens_minute = 480; day.closes_minute = 1080 }
 end
 ```
 

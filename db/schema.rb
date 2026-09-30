@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_30_185655) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_30_190622) do
   create_table "appointment_services", force: :cascade do |t|
     t.integer "appointment_id", null: false
     t.integer "service_id", null: false
@@ -44,6 +44,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_185655) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["preferred_stylist_id"], name: "index_clients_on_preferred_stylist_id"
+  end
+
+  create_table "salon_days", force: :cascade do |t|
+    t.integer "wday", null: false
+    t.boolean "closed", default: false, null: false
+    t.integer "opens_minute", default: 480, null: false
+    t.integer "closes_minute", default: 1080, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["wday"], name: "index_salon_days_on_wday", unique: true
   end
 
   create_table "services", force: :cascade do |t|

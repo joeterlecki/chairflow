@@ -14,7 +14,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **1.2 Clients.** Model, normalizers, `matching`, `possible_duplicates_of`. *Done when:* unit tests cover normalization and duplicate matching.
 - [x] **1.3 Appointments with services.** `Appointment` + `AppointmentService`, derived `ends_at`, statuses. *Done when:* unit tests cover `ends_at` from one and from several services.
 - [x] **1.4 No double-booking.** Overlap validation. *Done when:* unit tests cover back-to-back, cancelled, and self-edit cases.
-- [ ] **1.5 Salon days.** `SalonDay` model and seeds (every day, 8 AM to 6 PM). *Done when:* unit tests cover validations and the DST dates.
+- [x] **1.5 Salon days.** `SalonDay` model and seeds (every day, 8 AM to 6 PM). *Done when:* unit tests cover validations and the DST dates.
 - [ ] **1.6 Availability.** `Availability` within salon hours. *Done when:* unit tests cover the edge cases in [../scheduling/availability.md](../scheduling/availability.md).
 
 ## Phase 2: Seeing the day

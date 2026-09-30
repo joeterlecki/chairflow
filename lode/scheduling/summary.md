@@ -1,6 +1,6 @@
 # Scheduling
 
-> Status: `Stylist`, `Service`, `Appointment`, and `AppointmentService` are implemented (tasks 1.1, 1.3-1.4), including derived `ends_at`, the `booked`/`cancelled` status, and overlap prevention. Salon days (1.5) and availability (1.6) are still planned. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
+> Status: `Stylist`, `Service`, `Appointment`, `AppointmentService`, and `SalonDay` are implemented (tasks 1.1, 1.3-1.5), including derived `ends_at`, the `booked`/`cancelled` status, overlap prevention, and seeded salon hours (see [salon-hours.md](salon-hours.md)). Availability (1.6) is still planned. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
 
 ## MVP rules
 1. **Salon hours**, set by the salon on the Salon hours page (default 8 AM to 6 PM every day), are the only bookable window, the same for every stylist. See [salon-hours.md](salon-hours.md).
@@ -9,7 +9,7 @@
 4. Open slots start on the 15-minute grid in local wall-clock time.
 
 ## Schema
-All four tables below are implemented (`app/models/stylist.rb`, `service.rb`, `appointment.rb`, `appointment_service.rb`). `Stylist::SWATCHES` is the canonical swatch list (`lavender`, `sage`, `clay`, `sky`, `sand`; see [../ui/design-tokens.md](../ui/design-tokens.md)). `Stylist` and `Service` each have an `active` scope; `Stylist`/`Service` are seeded via `db/seeds.rb`.
+The four tables below are implemented (`app/models/stylist.rb`, `service.rb`, `appointment.rb`, `appointment_service.rb`); `salon_days` has its own schema and model in [salon-hours.md](salon-hours.md). `Stylist::SWATCHES` is the canonical swatch list (`lavender`, `sage`, `clay`, `sky`, `sand`; see [../ui/design-tokens.md](../ui/design-tokens.md)). `Stylist` and `Service` each have an `active` scope; both, plus `SalonDay`, are seeded via `db/seeds.rb`.
 ```ruby
 create_table :stylists do |t|
   t.string  :name,   null: false

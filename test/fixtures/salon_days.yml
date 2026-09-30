@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+sunday:
+  wday: 0
+  closed: false
+  opens_minute: 480
+  closes_minute: 1080
+
+monday_closed:
+  wday: 1
+  closed: true
+  opens_minute: 480
+  closes_minute: 1080
