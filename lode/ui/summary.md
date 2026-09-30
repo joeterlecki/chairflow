@@ -1,6 +1,6 @@
 # UI overview
 
-> Status: the page skeleton is implemented — layout, nav, page header partial, flash, Tailwind tokens. The nav shows only **Calendar**, the one page that exists; **Clients** and **Salon hours** belong in `shared/_nav.html.erb` once those controllers exist, not before — a nav link to a route that doesn't exist breaks the page it's on. `calendar#index` renders the full day view (stylist columns, appointment cards placed by time, date navigation, closed-day message) — see [calendar-views.md](calendar-views.md) for what's still missing (clickable cards, tapping an empty cell to book).
+> Status: the page skeleton is implemented — layout, nav, page header partial, flash, Tailwind tokens. The nav shows only **Calendar**, the one page that exists; **Clients** and **Salon hours** belong in `shared/_nav.html.erb` once those controllers exist, not before — a nav link to a route that doesn't exist breaks the page it's on. `calendar#index` renders the full day view (stylist columns, clickable appointment cards, date navigation, closed-day message), and tapping a card opens the appointment detail dialog — see [calendar-views.md](calendar-views.md) for what's still missing there (tapping an empty cell to book, editing, cancelling).
 
 chairflow looks like a well-kept paper appointment book: a warm off-white page, one deep pine-green accent, soft stylist swatches, and plenty of room. It should feel calm at 9 AM on a busy Saturday.
 

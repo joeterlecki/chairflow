@@ -1,0 +1,19 @@
+<%= turbo_frame_tag "modal" do %>
+  <dialog data-controller="modal" class="m-auto w-full max-w-md rounded-2xl border border-line bg-surface p-6 backdrop:bg-ink/40">
+    <p class="text-xs font-medium uppercase tracking-[0.25em] text-muted">A moment in the chair</p>
+    <h2 class="mt-2 text-2xl font-semibold tracking-tight text-ink"><%= @appointment.client.name %></h2>
+    <p class="mt-1 text-muted"><%= @appointment.services.map(&:name).to_sentence %></p>
+
+    <p class="mt-4 text-ink">
+      <%= @appointment.starts_at.strftime("%A, %B %-d") %> ·
+      <%= @appointment.starts_at.strftime("%-l:%M") %>–<%= @appointment.ends_at.strftime("%-l:%M %p") %>
+    </p>
+    <p class="text-muted">With <%= @appointment.stylist.name %></p>
+
+    <div class="mt-6">
+      <%= link_to "Done", root_path,
+            data: { turbo_frame: "_top" },
+            class: "inline-block rounded-xl bg-pine px-4 py-2 text-white hover:bg-pine-hover" %>
+    </div>
+  </dialog>
+<% end %>

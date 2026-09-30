@@ -22,7 +22,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **2.2 Layout and look.** Tokens, nav, page header partial, flash. *Done when:* a system test visits `/` and sees "The appointment book."
 - [x] **2.3 Day view.** Stylist columns with appointment cards placed by time. *Done when:* a system test sees a fixture appointment under the right stylist.
 - [x] **2.4 Moving between days.** Arrows, Today, count, closed-day message. *Done when:* a system test steps to tomorrow and back.
-- [ ] **2.5 Appointment detail.** Dialog in the modal frame. *Done when:* a system test opens a card and sees the client, services, and time.
+- [x] **2.5 Appointment detail.** Dialog in the modal frame. *Done when:* a system test opens a card and sees the client, services, and time.
 
 ## Phase 3: Booking
 - [ ] **3.1 Book the simplest case.** Existing client, one service, typed time. *Done when:* a system test books and sees the card on the day view.

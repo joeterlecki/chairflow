@@ -8,13 +8,15 @@
     <div class="relative grid rounded-xl border border-line bg-surface"
          style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
       <% appointments.each do |appointment| %>
-        <div class="rounded-lg border-l-[3px] px-3 py-2 <%= swatch_classes(stylist) %>"
-             style="grid-row: <%= day_row_for(window, appointment.starts_at) %> / span <%= day_span_for(appointment.duration) %>">
+        <%= link_to appointment_path(appointment),
+              data: { turbo_frame: "modal" },
+              class: "block rounded-lg border-l-[3px] px-3 py-2 #{swatch_classes(stylist)}",
+              style: "grid-row: #{day_row_for(window, appointment.starts_at)} / span #{day_span_for(appointment.duration)}" do %>
           <p class="font-medium text-ink"><%= appointment.client.name %></p>
           <p class="text-sm text-muted">
             <%= appointment.services.map(&:name).to_sentence %> · <%= appointment.starts_at.strftime("%-l:%M") %>
           </p>
-        </div>
+        <% end %>
       <% end %>
     </div>
   <% end %>
