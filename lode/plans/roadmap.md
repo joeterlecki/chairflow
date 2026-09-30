@@ -31,7 +31,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **3.4 Find or add a client.** One search box with "+ Add … as a new client". *Done when:* a system test books a brand-new client.
 - [ ] **3.5 Duplicate warning.** *Done when:* a system test sees the warning for a matching phone, then both "Use existing" and "Add as someone new" work.
 - [ ] **3.6 Kind clash errors.** *Done when:* a system test attempts a clash and reads the friendly message.
-- [ ] **3.7 Book from the calendar.** Tap an open cell to prefill stylist and time. *Done when:* a system test does it.
+- [ ] **3.7 Book from the calendar.** Tap an open cell to prefill stylist and time. *Done when:* a system test does it. Revisit here: a subtle hourly tick line (cross-column time alignment, not a dense labeled grid — see [../ui/calendar-views.md](../ui/calendar-views.md)) and a current-time indicator ([../ui/calendar-views.md](../ui/calendar-views.md)'s "Later"), both about giving the empty grid space meaning, same as this task.
 
 ## Phase 4: Changing plans
 - [ ] **4.1 Edit and reschedule.** *Done when:* a system test moves an appointment and sees it at the new time.
