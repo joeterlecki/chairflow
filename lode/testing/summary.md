@@ -1,6 +1,6 @@
 # Testing strategy
 
-> Status: the harness is implemented (task 0.5): `test/application_system_test_case.rb` registers the `:playwright` driver, and `test/system/smoke_test.rb` is the one smoke test (visits `/up`, the Rails health check, since no app page exists yet). CI (`.github/workflows/ci.yml`, Rails' generated workflow) installs the matching Playwright browser before running `test:system`.
+> Status: the harness is implemented (task 0.5): `test/application_system_test_case.rb` registers the `:playwright` driver, and `test/system/smoke_test.rb` is the one smoke test (visits `/up`, the Rails health check, since no app page exists yet). CI (`.github/workflows/ci.yml`, Rails' generated workflow) installs the matching Playwright browser before running `test:system`, and is confirmed green on GitHub Actions (all 5 jobs).
 
 We follow Kent C. Dodds' **testing trophy**: static checks at the base, a few unit tests, and **most confidence from end-to-end system tests** that use the app the way the front desk does.
 
