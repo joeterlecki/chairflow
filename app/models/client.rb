@@ -1,5 +1,6 @@
 class Client < ApplicationRecord
   belongs_to :preferred_stylist, class_name: "Stylist", optional: true
+  has_many :appointments, dependent: :restrict_with_error
 
   normalizes :email, with: ->(email) { email.strip.downcase }
   normalizes :phone, with: ->(phone) { phone.gsub(/[^\d+]/, "") }

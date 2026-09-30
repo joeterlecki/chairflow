@@ -1,6 +1,6 @@
 # Overlap prevention (no double-booking)
 
-> Status: planned, not yet implemented.
+> Status: planned, not yet implemented. `Appointment` itself (client/stylist, derived `ends_at`, `booked`/`cancelled` status) already exists — see [summary.md](summary.md); this file covers the `scope :overlapping` and `stylist_is_free` validation still to add.
 
 ## The rule
 Two `booked` appointments for the same stylist must never overlap. Intervals are half-open, so one ending at 10:00 and another starting at 10:00 is fine. This is the one scheduling rule that **blocks** rather than warns, because a double-booking corrupts the book.
@@ -16,36 +16,13 @@ SQLite has no exclusion constraints, so the model enforces the rule. It must be 
 3. Rails 8's SQLite adapter starts transactions as `IMMEDIATE`, which takes the write lock at `BEGIN`, so a second writer waits and then sees the first appointment. **Verify this during scaffolding**; set `default_transaction_mode: immediate` in `config/database.yml` if needed.
 
 ```ruby
-# app/models/appointment.rb (excerpt)
+# app/models/appointment.rb (additions on top of the existing model, see summary.md)
 class Appointment < ApplicationRecord
-  belongs_to :client
-  belongs_to :stylist
-  has_many :appointment_services, -> { order(:position) }, dependent: :destroy, inverse_of: :appointment
-  has_many :services, through: :appointment_services
-  accepts_nested_attributes_for :appointment_services, allow_destroy: true
-
-  enum :status, { booked: "booked", cancelled: "cancelled" }, default: :booked
-
   scope :overlapping, ->(from, to) { where("starts_at < ? AND ends_at > ?", to, from) }
 
-  before_validation :derive_ends_at
-  validates :starts_at, presence: true
-  validate :has_a_service
   validate :stylist_is_free, if: -> { booked? && stylist && starts_at && ends_at }
 
-  def duration
-    appointment_services.reject(&:marked_for_destruction?).sum(&:duration_minutes).minutes
-  end
-
   private
-
-  def derive_ends_at
-    self.ends_at = starts_at + duration if starts_at
-  end
-
-  def has_a_service
-    errors.add(:base, "Choose at least one service.") if duration.zero?
-  end
 
   def stylist_is_free
     clash = stylist.appointments.booked.overlapping(starts_at, ends_at).where.not(id: id).first

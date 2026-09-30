@@ -1,6 +1,6 @@
 # Scheduling
 
-> Status: `Stylist` and `Service` are implemented (task 1.1); appointments, salon days, overlap prevention, and availability are still planned. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
+> Status: `Stylist`, `Service`, `Appointment`, and `AppointmentService` are implemented (tasks 1.1, 1.3), including derived `ends_at` and the `booked`/`cancelled` status. Overlap prevention (1.4), salon days (1.5), and availability (1.6) are still planned. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
 
 ## MVP rules
 1. **Salon hours**, set by the salon on the Salon hours page (default 8 AM to 6 PM every day), are the only bookable window, the same for every stylist. See [salon-hours.md](salon-hours.md).
@@ -9,7 +9,7 @@
 4. Open slots start on the 15-minute grid in local wall-clock time.
 
 ## Schema
-`stylists` and `services` (below) are implemented as `app/models/stylist.rb` and `app/models/service.rb`, each with an `active` scope and seeded via `db/seeds.rb`. `Stylist::SWATCHES` is the canonical swatch list (`lavender`, `sage`, `clay`, `sky`, `sand`; see [../ui/design-tokens.md](../ui/design-tokens.md)). `appointments` and `appointment_services` below are still planned (task 1.3).
+All four tables below are implemented (`app/models/stylist.rb`, `service.rb`, `appointment.rb`, `appointment_service.rb`). `Stylist::SWATCHES` is the canonical swatch list (`lavender`, `sage`, `clay`, `sky`, `sand`; see [../ui/design-tokens.md](../ui/design-tokens.md)). `Stylist` and `Service` each have an `active` scope; `Stylist`/`Service` are seeded via `db/seeds.rb`.
 ```ruby
 create_table :stylists do |t|
   t.string  :name,   null: false
@@ -44,7 +44,7 @@ create_table :appointment_services do |t|
 end
 ```
 
-`ends_at` is stored so overlap queries stay simple and indexable. It is always derived from the appointment's services, never typed by hand.
+`ends_at` is stored so overlap queries stay simple and indexable. `Appointment#derive_ends_at` (a `before_validation`) sets it to `starts_at + duration`, where `duration` sums the (non-destroyed) `appointment_services`' `duration_minutes`; it is never typed by hand. An appointment with no services is invalid (`has_a_service`, error on `:base`). `AppointmentService#duration_minutes` defaults from `service.default_duration_minutes` when left blank, and can be overridden per visit. `Appointment.status` is an enum (`booked` default, `cancelled`); overlap prevention for `booked` appointments is [overlap-prevention.md](overlap-prevention.md), not yet implemented.
 
 ```mermaid
 flowchart TD

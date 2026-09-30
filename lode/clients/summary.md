@@ -1,6 +1,6 @@
 # Clients
 
-> Status: the model below is implemented (task 1.2), minus `has_many :appointments` — added in task 1.3 once `Appointment` exists. Pages (index/profile/edit) are still planned (phase 5).
+> Status: the model below is implemented (tasks 1.2-1.3). Pages (index/profile/edit) are still planned (phase 5).
 
 A client is a person who gets appointments. Keep the record light: a name, optional ways to reach them, and a preferred stylist. No CRM features.
 
@@ -8,7 +8,7 @@ A client is a person who gets appointments. Keep the record light: a name, optio
 # app/models/client.rb
 class Client < ApplicationRecord
   belongs_to :preferred_stylist, class_name: "Stylist", optional: true
-  # has_many :appointments, dependent: :restrict_with_error -- added in task 1.3
+  has_many :appointments, dependent: :restrict_with_error
 
   normalizes :email, with: ->(email) { email.strip.downcase }
   normalizes :phone, with: ->(phone) { phone.gsub(/[^\d+]/, "") }
