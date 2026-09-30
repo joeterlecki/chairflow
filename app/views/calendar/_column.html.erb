@@ -5,7 +5,7 @@
   </p>
 
   <% if window %>
-    <div class="relative grid rounded-xl border border-line bg-surface"
+    <div class="relative grid gap-y-1 rounded-xl border border-line bg-surface"
          style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
       <% appointments.each do |appointment| %>
         <%= link_to appointment_path(appointment),

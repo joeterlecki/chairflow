@@ -12,7 +12,7 @@ Cards are placed with CSS grid rows computed from time, via `CalendarHelper` (`a
 
 ```erb
 <%# app/views/calendar/_column.html.erb (excerpt) %>
-<div class="grid" style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
+<div class="grid gap-y-1" style="grid-template-rows: repeat(<%= day_slot_count(window) %>, minmax(1.25rem, auto))">
   <% appointments.each do |appointment| %>
     <%= link_to appointment_path(appointment),
           data: { turbo_frame: "modal" },
@@ -27,6 +27,8 @@ Cards are placed with CSS grid rows computed from time, via `CalendarHelper` (`a
 </div>
 ```
 `window` is `SalonDay.hours_on(date)` (a `Range` of `TimeWithZone`, or `nil`). `day_row_for` = `((time - window.begin) / 15.minutes).to_i + 1`; `day_span_for` = `(duration / 15.minutes).ceil`. Each stylist column also carries `id="stylist-column-#{stylist.id}"` so tests can scope into it.
+
+**`gap-y-1` on the grid matters**: without it, two back-to-back appointments for the same stylist render with touching edges — visually one card, not two. A CSS Grid item that spans multiple row tracks absorbs any `row-gap` *within* its own span into its own height (so a single card stays one continuous box, not sliced by internal gaps); the gap only becomes visible at the boundary between two different items. That's why a uniform `gap-y-1` on the whole grid is enough — it doesn't need to be conditional on "is this card adjacent to another."
 
 ## Week overview (after MVP)
 Planned shape, for when it's picked up: one column per day showing each stylist's load and next opening, tapping through to the day. A single-stylist filter shows a full 7-column grid. The POC's 21-column grid is not repeated.
