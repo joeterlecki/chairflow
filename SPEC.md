@@ -324,6 +324,7 @@ The previously suggested sequence was statuses/history → reminder groundwork/e
 
 | Date | Decision / provenance |
 | --- | --- |
+| 2026-09-30 | Owner selected Rails as the ongoing SaaS foundation after evaluating a Go calendar prototype, and requested removal of the Go implementation. The isolated experiment and its supporting artifacts were removed; Rails application code and data were unchanged. |
 | 2026-09-25 | Consolidate the existing build into a reviewable baseline to guide conversations and future agents. |
 | 2026-09-25 | Back up the first draft, then initialize Spec Kit 1.0.11 with the OpenCode integration. Keep the current-state baseline; apply the feature workflow to future bounded changes. Constitution ratification and completed-spec lifecycle are pending owner review. |
 | 2026-09-25 | Owner accepted a living baseline plus historical completed feature artifacts and indicated client history as the likely first feature. Keep README focused on development notes and the spec workflow. Explain the constitution as shared development rules; full review remains open. |
