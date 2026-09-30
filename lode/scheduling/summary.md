@@ -1,6 +1,6 @@
 # Scheduling
 
-> Status: planned, not yet implemented. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
+> Status: `Stylist` and `Service` are implemented (task 1.1); appointments, salon days, overlap prevention, and availability are still planned. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
 
 ## MVP rules
 1. **Salon hours**, set by the salon on the Salon hours page (default 8 AM to 6 PM every day), are the only bookable window, the same for every stylist. See [salon-hours.md](salon-hours.md).
@@ -8,7 +8,8 @@
 3. Intervals are half-open, `[starts_at, ends_at)`, so back-to-back appointments are allowed.
 4. Open slots start on the 15-minute grid in local wall-clock time.
 
-## Schema (planned)
+## Schema
+`stylists` and `services` (below) are implemented as `app/models/stylist.rb` and `app/models/service.rb`, each with an `active` scope and seeded via `db/seeds.rb`. `Stylist::SWATCHES` is the canonical swatch list (`lavender`, `sage`, `clay`, `sky`, `sand`; see [../ui/design-tokens.md](../ui/design-tokens.md)). `appointments` and `appointment_services` below are still planned (task 1.3).
 ```ruby
 create_table :stylists do |t|
   t.string  :name,   null: false

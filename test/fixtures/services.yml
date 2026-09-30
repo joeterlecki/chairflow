@@ -1,0 +1,16 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+cut_and_finish:
+  name: Cut & finish
+  default_duration_minutes: 45
+  active: true
+
+blowout:
+  name: Blowout
+  default_duration_minutes: 30
+  active: true
+
+retired:
+  name: Perm
+  default_duration_minutes: 120
+  active: false

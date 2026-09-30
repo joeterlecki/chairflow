@@ -10,7 +10,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [ ] **0.5 Browser tests and CI.** Capybara + Playwright, one smoke system test, CI runs everything. *Done when:* CI is green, including the smoke test.
 
 ## Phase 1: Foundations
-- [ ] **1.1 Stylists and services.** Models, fixtures, seeds (no admin pages). *Done when:* `bin/rails db:seed` loads them and a model test covers `active` scopes.
+- [x] **1.1 Stylists and services.** Models, fixtures, seeds (no admin pages). *Done when:* `bin/rails db:seed` loads them and a model test covers `active` scopes.
 - [ ] **1.2 Clients.** Model, normalizers, `matching`, `possible_duplicates_of`. *Done when:* unit tests cover normalization and duplicate matching.
 - [ ] **1.3 Appointments with services.** `Appointment` + `AppointmentService`, derived `ends_at`, statuses. *Done when:* unit tests cover `ends_at` from one and from several services.
 - [ ] **1.4 No double-booking.** Overlap validation. *Done when:* unit tests cover back-to-back, cancelled, and self-edit cases.

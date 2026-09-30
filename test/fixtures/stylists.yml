@@ -1,0 +1,16 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+melissa:
+  name: Melissa
+  swatch: sage
+  active: true
+
+devon:
+  name: Devon
+  swatch: clay
+  active: true
+
+retired:
+  name: Pat
+  swatch: sky
+  active: false
