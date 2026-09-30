@@ -1,0 +1,30 @@
+script_dir=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
+base_prompt=$(cat "$script_dir/../prompts/SystemPrompt.txt")
+combined_prompt=$base_prompt
+
+n=$#
+while [ $n -gt 0 ]; do
+    case $1 in
+        --append-system-prompt)
+            combined_prompt="$combined_prompt
+
+$2"
+            shift 2
+            n=$((n - 2))
+            ;;
+        --append-system-prompt=*)
+            combined_prompt="$combined_prompt
+
+${1#--append-system-prompt=}"
+            shift
+            n=$((n - 1))
+            ;;
+        *)
+            set -- "$@" "$1"
+            shift
+            n=$((n - 1))
+            ;;
+    esac
+done
+
+exec claude --append-system-prompt "$combined_prompt" "$@"
