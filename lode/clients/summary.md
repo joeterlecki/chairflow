@@ -1,6 +1,6 @@
 # Clients
 
-> Status: the model below is implemented (tasks 1.2-1.3). Pages (index/profile/edit) are still planned (phase 5).
+> Status: the model below is implemented. Pages (index/profile/edit) are still planned.
 
 A client is a person who gets appointments. Keep the record light: a name, optional ways to reach them, and a preferred stylist. No CRM features.
 

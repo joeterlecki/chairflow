@@ -1,6 +1,6 @@
 # Time zones and DST
 
-> Status: the zone is set (task 0.4); `SalonDay` and the DST-safe `range_on` below are still planned (task 1.5).
+> Status: the zone is set; `SalonDay` and the DST-safe `range_on` below are implemented — see [salon-hours.md](salon-hours.md).
 
 ## Rules
 - The salon zone is `America/New_York`, set in `config/application.rb`: `config.time_zone = "America/New_York"`.

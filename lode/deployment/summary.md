@@ -1,6 +1,6 @@
 # Deployment and configuration
 
-> Status: structured logging is implemented (task 2.1). Everything else below is already true of the Rails 8 defaults this app was generated with.
+> Status: structured logging is implemented. Everything else below is already true of the Rails 8 defaults this app was generated with.
 
 We mostly follow [12-factor app](https://12factor.net) principles, with one deliberate deviation on logging.
 
@@ -12,10 +12,10 @@ We mostly follow [12-factor app](https://12factor.net) principles, with one deli
 ## Where we don't (yet) fully agree
 - **Secrets.** Rails' encrypted `config/credentials.yml.enc` (decrypted via `config/master.key`, itself from `RAILS_MASTER_KEY`) is kept for now rather than moving every secret to a raw env var — there's exactly one salon and no secrets yet. Revisit if/when there's more than a couple of credentials to manage, or a second deploy target.
 
-## Logging: structured from the start, not stdout noise
-12-factor's logging factor says "treat logs as event streams" and just write unstructured lines to stdout, letting the execution environment collect them. We agree with shipping to stdout (no log files, no in-app log routing), but **disagree that unstructured text is enough.** Rails 8's own production default was exactly that (`ActiveSupport::TaggedLogging.logger(STDOUT)` with a `[request_id]` text prefix on every line) — multi-line, free-text output per request (one line per SQL query, one per render, one per redirect...). It's noise: hard to query, hard to correlate, and every line would need re-touching later to add trace/span IDs.
+## Logging: structured, not stdout noise
+12-factor's logging factor says "treat logs as event streams": unstructured lines to stdout, with the execution environment collecting them. We agree with stdout (no log files, no in-app log routing) but **disagree that unstructured text is enough** — it's noise: hard to query, hard to correlate, and every line would need re-touching later to add trace/span IDs.
 
-**What we did instead:** one structured (JSON) line per request, in every environment (not just production), via `lograge`. Chosen over hand-rolling a formatter (more code to maintain) or a heavier framework (`rails_semantic_logger` and friends) this single-salon app doesn't need yet.
+Every environment logs one structured (JSON) line per request instead, via `lograge`, chosen over hand-rolling a formatter (more code to maintain) or a heavier framework (`rails_semantic_logger` and friends) this single-salon app doesn't need.
 
 ```ruby
 # config/initializers/lograge.rb
@@ -29,9 +29,10 @@ Rails.application.configure do
   end
 end
 ```
-`ActiveSupport::TaggedLogging` and `lograge`'s JSON formatter don't mix: tags are a plain-text prefix (`[request_id] {...}`), which breaks the line as JSON. So `config/environments/production.rb` was changed from tagged logging to a plain `ActiveSupport::Logger.new(STDOUT)`, and `request_id` is carried as a JSON field via `custom_options` instead (pulled from `event.payload[:headers]["action_dispatch.request_id"]`, which `ActionController::Instrumentation` always includes).
 
-Verified by request (`curl localhost:PORT/up`, development env) — one line:
+**Invariant: never wrap `config.logger` in `ActiveSupport::TaggedLogging`.** Tags are a plain-text prefix (`[request_id] {...}`), which breaks the line as JSON — this is why `config/environments/production.rb` uses a plain `ActiveSupport::Logger.new(STDOUT)`, with `request_id` carried as a JSON field via `custom_options` instead (pulled from `event.payload[:headers]["action_dispatch.request_id"]`, which `ActionController::Instrumentation` always includes).
+
+A request produces one line:
 ```json
 {"method":"GET","path":"/up","format":"*/*","controller":"Rails::HealthController","action":"show","status":200,"allocations":2298,"duration":1.84,"view":0.79,"db":0.0,"request_id":"e74310ac-..."}
 ```

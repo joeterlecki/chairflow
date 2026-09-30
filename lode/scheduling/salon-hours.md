@@ -1,6 +1,6 @@
 # Salon hours
 
-> Status: `SalonDay` is implemented and seeded (task 1.5, all seven days open 8-6). The Salon hours page (controller/view below) is still planned (task 5.4).
+> Status: `SalonDay` is implemented and seeded (all seven days open 8-6). The Salon hours page (controller/view below) is still planned — see [../plans/roadmap.md](../plans/roadmap.md).
 
 The salon sets its own opening hours on the **Salon hours** page. In the MVP, these hours are the single bookable window for every stylist. Defaults: **every day, 8:00 AM to 6:00 PM** Eastern, until the salon changes them.
 

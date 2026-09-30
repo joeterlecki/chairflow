@@ -1,6 +1,6 @@
 # Scheduling
 
-> Status: Phase 1 (foundations) is complete. `Stylist`, `Service`, `Appointment`, `AppointmentService`, `SalonDay`, and `Availability` are all implemented: derived `ends_at`, `booked`/`cancelled` status, overlap prevention, seeded salon hours ([salon-hours.md](salon-hours.md)), and open-slot computation ([availability.md](availability.md)). Nothing uses `Availability` yet — the day planner (task 3.3) is the first caller. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
+> Status: `Stylist`, `Service`, `Appointment`, `AppointmentService`, `SalonDay`, and `Availability` all exist: derived `ends_at`, `booked`/`cancelled` status, overlap prevention, seeded salon hours ([salon-hours.md](salon-hours.md)), and open-slot computation ([availability.md](availability.md)). Nothing calls `Availability` yet — no booking UI exists to need it. **Deliberately simple for the MVP.** Per-stylist availability (working hours, breaks, time off, processing time) will be redesigned from scratch after the MVP. The POC's approach is not being reused.
 
 ## MVP rules
 1. **Salon hours**, set by the salon on the Salon hours page (default 8 AM to 6 PM every day), are the only bookable window, the same for every stylist. See [salon-hours.md](salon-hours.md).

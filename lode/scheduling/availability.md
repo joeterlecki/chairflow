@@ -1,6 +1,6 @@
 # Availability (open slots)
 
-> Status: implemented (task 1.6), as a plain PORO (`app/models/availability.rb`), not an `ActiveRecord::Base`. Used by nothing yet — the day planner that calls it is still planned (task 3.3).
+> Status: implemented, as a plain PORO (`app/models/availability.rb`), not an `ActiveRecord::Base`. Used by nothing yet — the day planner that calls it is still planned.
 
 `Availability` answers: *for this stylist, on this date, for this long, which start times are open?* It feeds the day planner.
 

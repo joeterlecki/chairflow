@@ -1,6 +1,6 @@
 # Overlap prevention (no double-booking)
 
-> Status: implemented (task 1.4), on top of the `Appointment` model from [summary.md](summary.md).
+> Status: implemented, on top of the `Appointment` model from [summary.md](summary.md).
 
 ## The rule
 Two `booked` appointments for the same stylist must never overlap. Intervals are half-open, so one ending at 10:00 and another starting at 10:00 is fine. This is the one scheduling rule that **blocks** rather than warns, because a double-booking corrupts the book.
@@ -13,7 +13,7 @@ SQLite has no exclusion constraints, so the model enforces the rule. It must be 
 ## How we enforce it
 1. A model validation checks for a clash.
 2. `save` runs validations inside its transaction.
-3. Rails 8's SQLite adapter starts transactions as `IMMEDIATE`, which takes the write lock at `BEGIN`, so a second writer waits and then sees the first appointment. **Confirmed (task 0.4):** `SQLite3Adapter` hardcodes `default_transaction_mode: :immediate` unconditionally in its connection parameters (`activerecord-8.1.4/lib/active_record/connection_adapters/sqlite3_adapter.rb`) — no `config/database.yml` change needed or possible to override.
+3. Rails 8's SQLite adapter starts transactions as `IMMEDIATE`, which takes the write lock at `BEGIN`, so a second writer waits and then sees the first appointment. `SQLite3Adapter` hardcodes `default_transaction_mode: :immediate` unconditionally in its connection parameters (`activerecord-8.1.4/lib/active_record/connection_adapters/sqlite3_adapter.rb`) — there is no `config/database.yml` setting that changes or overrides this.
 
 ```ruby
 # app/models/appointment.rb (excerpt; full model in scheduling/summary.md)
