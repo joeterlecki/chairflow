@@ -10,7 +10,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_30_183802) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_30_185359) do
+  create_table "clients", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email"
+    t.string "phone"
+    t.integer "preferred_stylist_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["preferred_stylist_id"], name: "index_clients_on_preferred_stylist_id"
+  end
+
   create_table "services", force: :cascade do |t|
     t.string "name", null: false
     t.integer "default_duration_minutes", null: false
@@ -26,4 +36,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_30_183802) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  add_foreign_key "clients", "stylists", column: "preferred_stylist_id"
 end

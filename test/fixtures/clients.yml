@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+ava:
+  name: Ava Thompson
+  email: ava@example.com
+  phone: "5551234567"
+  preferred_stylist: melissa
+
+noah:
+  name: Noah Carter
+  email:
+  phone:
+  preferred_stylist:

@@ -1,6 +1,6 @@
 # Clients
 
-> Status: planned, not yet implemented.
+> Status: the model below is implemented (task 1.2), minus `has_many :appointments` — added in task 1.3 once `Appointment` exists. Pages (index/profile/edit) are still planned (phase 5).
 
 A client is a person who gets appointments. Keep the record light: a name, optional ways to reach them, and a preferred stylist. No CRM features.
 
@@ -8,7 +8,7 @@ A client is a person who gets appointments. Keep the record light: a name, optio
 # app/models/client.rb
 class Client < ApplicationRecord
   belongs_to :preferred_stylist, class_name: "Stylist", optional: true
-  has_many :appointments, dependent: :restrict_with_error
+  # has_many :appointments, dependent: :restrict_with_error -- added in task 1.3
 
   normalizes :email, with: ->(email) { email.strip.downcase }
   normalizes :phone, with: ->(phone) { phone.gsub(/[^\d+]/, "") }
@@ -20,7 +20,7 @@ class Client < ApplicationRecord
 
   # Soft check used before creating a client. Never blocks, never merges.
   def self.possible_duplicates_of(name:, email: nil, phone: nil)
-    candidate = new(name:, email:, phone:)   # reuse the normalizers
+    candidate = new(name: name, email: email, phone: phone)   # reuse the normalizers
     scope = where("LOWER(name) = ?", candidate.name.to_s.strip.downcase)
     scope = scope.or(where(email: candidate.email)) if candidate.email.present?
     scope = scope.or(where(phone: candidate.phone)) if candidate.phone.present?
