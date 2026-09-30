@@ -16,39 +16,25 @@ class AppointmentsController < ApplicationController
     else
       render :new, status: :unprocessable_entity
     end
-  rescue ActiveRecord::RecordInvalid => e
-    @appointment = Appointment.new(basic_attributes)
-    @appointment.appointment_services.build
-    @appointment.errors.add(:base, "Couldn't save that service: #{e.record.errors.full_messages.to_sentence}")
-    render :new, status: :unprocessable_entity
   end
 
   private
 
-  # Each service row is a typed name, not a picked service_id: a name matching an
-  # existing (case-insensitive) service reuses it, any other name creates a new
-  # one. There's one catalog, not a separate "custom" track -- see
-  # lode/booking/summary.md.
+  # Picked from Service.active, not typed -- creating services (and, later,
+  # setting prices) is an admin/power-user job, not something the front desk
+  # does implicitly while booking. See lode/booking/summary.md.
   def appointment_attributes
-    basic_attributes.merge(appointment_services_attributes: service_rows)
-  end
-
-  def basic_attributes
-    params.expect(appointment: [ :client_id, :stylist_id, :starts_at ]).to_h
+    attrs = params.expect(appointment: [ :client_id, :stylist_id, :starts_at ]).to_h
+    attrs["appointment_services_attributes"] = service_rows
+    attrs
   end
 
   def service_rows
     raw_rows = params.dig(:appointment, :appointment_services_attributes)&.values || []
     raw_rows.each_with_index.filter_map do |row, index|
-      name = row[:service_name].to_s.strip
-      next if name.blank?
+      next if row[:service_id].blank?
 
-      service = Service.where("LOWER(name) = ?", name.downcase).first_or_create! do |s|
-        s.name = name
-        s.default_duration_minutes = row[:duration_minutes].presence || 30
-      end
-
-      { service_id: service.id, service_name: service.name, duration_minutes: row[:duration_minutes].presence, position: index + 1 }
+      { service_id: row[:service_id], duration_minutes: row[:duration_minutes].presence, position: index + 1 }
     end
   end
 end

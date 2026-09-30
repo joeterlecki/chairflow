@@ -56,5 +56,6 @@ flowchart LR
 - Revisit scheduling from scratch: per-stylist hours, breaks, time off and holidays, warnings for out-of-hours times.
 - Processing time (a stylist is free during color development). The family salon does this; parked on purpose.
 - Sign-in and roles: front desk and stylists both book (needs a design conversation).
-- Week view; Services and Team schedule pages.
+- Week view; Team schedule page.
+- Services management page: create/edit services and (eventually) prices. Gated to an admin/power-user role, not the front desk — depends on the sign-in/roles design above. Booking (Phase 3) only ever picks from `Service.active`; it deliberately doesn't create services.
 - Reminders (email or SMS); deploy with Kamal.

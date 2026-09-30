@@ -24,6 +24,19 @@ export default class extends Controller {
     this.updateTotal()
   }
 
+  // Prefills the row's minutes field from the chosen service's default duration
+  // (data-duration on the <option>); still editable, e.g. for a longer visit.
+  fillDuration(event) {
+    const option = event.target.selectedOptions[0]
+    const duration = option?.dataset.duration
+    if (!duration) return
+
+    const row = event.target.closest("[data-service-lines-target='row']")
+    const durationInput = row.querySelector("[data-service-lines-target='duration']")
+    durationInput.value = duration
+    this.updateTotal()
+  }
+
   updateTotal() {
     const total = this.durationTargets.reduce((sum, input) => sum + (parseInt(input.value, 10) || 0), 0)
     this.totalTarget.textContent = `${total} min`

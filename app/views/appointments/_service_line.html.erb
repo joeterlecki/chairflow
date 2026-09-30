@@ -1,17 +1,22 @@
 <div class="mb-3 flex items-end gap-2" data-service-lines-target="row">
   <div class="flex-1">
-    <%= line.label :service_name, "Service", class: "mb-1 block text-sm font-medium text-ink" %>
-    <%= line.text_field :service_name,
-          list: "services-datalist",
-          placeholder: "Type or pick a service",
-          required: true,
-          class: "w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink" %>
+    <%= line.label :service_id, "Service", class: "mb-1 block text-sm font-medium text-ink" %>
+    <div class="relative">
+      <%= line.select :service_id,
+            options_for_select(
+              Service.active.map { |s| [ s.name, s.id, { "data-duration": s.default_duration_minutes } ] },
+              line.object.service_id
+            ),
+            { prompt: true },
+            class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink",
+            data: { action: "change->service-lines#fillDuration" } %>
+      <%= select_chevron %>
+    </div>
   </div>
   <div class="w-28">
     <%= line.label :duration_minutes, "Minutes", class: "mb-1 block text-sm font-medium text-ink" %>
     <%= line.number_field :duration_minutes,
           min: 1,
-          required: true,
           data: { "service-lines-target": "duration", action: "input->service-lines#updateTotal" },
           class: "w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink" %>
   </div>

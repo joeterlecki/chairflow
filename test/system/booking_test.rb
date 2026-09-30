@@ -9,8 +9,7 @@ class BookingTest < ApplicationSystemTestCase
       within "dialog" do
         select "Noah Carter", from: "Client"
         select "Melissa", from: "Stylist"
-        fill_in "Service", with: "Blowout"
-        fill_in "Minutes", with: "30"
+        select "Blowout", from: "Service"
         fill_in "Time", with: "2026-10-01T14:00"
         click_on "Book appointment"
       end
@@ -25,7 +24,18 @@ class BookingTest < ApplicationSystemTestCase
     end
   end
 
-  test "books several services with a running total" do
+  test "picking a service prefills its default duration" do
+    visit root_path
+    click_on "+ New appointment"
+
+    within "dialog" do
+      select "Cut & finish", from: "Service"
+      assert_field "Minutes", with: services(:cut_and_finish).default_duration_minutes.to_s
+      assert_text "#{services(:cut_and_finish).default_duration_minutes} min"
+    end
+  end
+
+  test "books several services and sees the combined end time" do
     travel_to Time.zone.parse("2026-10-01 08:00") do
       visit root_path
       click_on "+ New appointment"
@@ -35,15 +45,13 @@ class BookingTest < ApplicationSystemTestCase
         select "Melissa", from: "Stylist"
 
         within all("[data-service-lines-target='row']").first do
-          fill_in "Service", with: "Cut & finish"
-          fill_in "Minutes", with: "45"
+          select "Cut & finish", from: "Service"
         end
         assert_text "45 min"
 
         click_on "+ Add a service"
         within all("[data-service-lines-target='row']").last do
-          fill_in "Service", with: "Gloss"
-          fill_in "Minutes", with: "30"
+          select "Blowout", from: "Service"
         end
         assert_text "75 min"
 
@@ -53,7 +61,12 @@ class BookingTest < ApplicationSystemTestCase
 
       within "#stylist-column-#{stylists(:melissa).id}" do
         assert_text "Noah Carter"
-        assert_text "Cut & finish and Gloss"
+        click_on "Noah Carter"
+      end
+
+      within "dialog" do
+        assert_text "2:00"
+        assert_text "3:15 PM"
       end
     end
   end
@@ -64,14 +77,13 @@ class BookingTest < ApplicationSystemTestCase
 
     within "dialog" do
       within all("[data-service-lines-target='row']").first do
-        fill_in "Service", with: "Cut & finish"
-        fill_in "Minutes", with: "45"
+        select "Cut & finish", from: "Service"
       end
+      assert_text "45 min"
 
       click_on "+ Add a service"
       within all("[data-service-lines-target='row']").last do
-        fill_in "Service", with: "Gloss"
-        fill_in "Minutes", with: "30"
+        select "Blowout", from: "Service"
       end
       assert_text "75 min"
 
@@ -79,51 +91,6 @@ class BookingTest < ApplicationSystemTestCase
         click_on "Remove"
       end
       assert_text "45 min"
-    end
-  end
-
-  test "typing a brand-new service name creates it" do
-    travel_to Time.zone.parse("2026-10-01 08:00") do
-      assert_not Service.exists?(name: "Deep condition")
-
-      visit root_path
-      click_on "+ New appointment"
-
-      within "dialog" do
-        select "Noah Carter", from: "Client"
-        select "Melissa", from: "Stylist"
-        fill_in "Service", with: "Deep condition"
-        fill_in "Minutes", with: "20"
-        fill_in "Time", with: "2026-10-01T15:00"
-        click_on "Book appointment"
-      end
-
-      assert_text "Booked. Noah Carter is in with Melissa at 3:00."
-      assert Service.exists?(name: "Deep condition")
-
-      within "#stylist-column-#{stylists(:melissa).id}" do
-        assert_text "Deep condition"
-      end
-    end
-  end
-
-  test "typing an existing service name in a different case reuses it, not a duplicate" do
-    travel_to Time.zone.parse("2026-10-01 08:00") do
-      count_before = Service.count
-
-      visit root_path
-      click_on "+ New appointment"
-
-      within "dialog" do
-        select "Noah Carter", from: "Client"
-        select "Melissa", from: "Stylist"
-        fill_in "Service", with: "cut & finish"
-        fill_in "Minutes", with: "45"
-        fill_in "Time", with: "2026-10-01T16:00"
-        click_on "Book appointment"
-      end
-
-      assert_equal count_before, Service.count
     end
   end
 

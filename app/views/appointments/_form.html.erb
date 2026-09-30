@@ -19,12 +19,6 @@
     </div>
   </div>
 
-  <datalist id="services-datalist">
-    <% Service.active.each do |service| %>
-      <option value="<%= service.name %>"></option>
-    <% end %>
-  </datalist>
-
   <div class="mb-6 max-w-md" data-controller="service-lines">
     <div data-service-lines-target="rows">
       <%= form.fields_for :appointment_services do |line| %>

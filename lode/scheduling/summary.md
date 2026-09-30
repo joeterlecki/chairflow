@@ -9,7 +9,7 @@
 4. Open slots start on the 15-minute grid in local wall-clock time.
 
 ## Schema
-The four tables below are implemented (`app/models/stylist.rb`, `service.rb`, `appointment.rb`, `appointment_service.rb`); `salon_days` has its own schema and model in [salon-hours.md](salon-hours.md). `Stylist::SWATCHES` is the canonical swatch list (`lavender`, `sage`, `clay`, `sky`, `sand`; see [../ui/design-tokens.md](../ui/design-tokens.md)). `Stylist` and `Service` each have an `active` scope; both, plus `SalonDay`, are seeded via `db/seeds.rb`. `services` isn't a fixed/admin-managed catalog: booking (see [../booking/summary.md](../booking/summary.md)) creates a new `Service` the first time its name is typed, case-insensitively reusing one that already exists.
+The four tables below are implemented (`app/models/stylist.rb`, `service.rb`, `appointment.rb`, `appointment_service.rb`); `salon_days` has its own schema and model in [salon-hours.md](salon-hours.md). `Stylist::SWATCHES` is the canonical swatch list (`lavender`, `sage`, `clay`, `sky`, `sand`; see [../ui/design-tokens.md](../ui/design-tokens.md)). `Stylist` and `Service` each have an `active` scope; both, plus `SalonDay`, are seeded via `db/seeds.rb`. Booking picks from `Service.active` (see [../booking/summary.md](../booking/summary.md)) but doesn't create services — that's planned as an admin/power-user page, not yet built.
 ```ruby
 create_table :stylists do |t|
   t.string  :name,   null: false

@@ -1,6 +1,6 @@
 # Booking flow
 
-> Status: an existing client, one or several services (typed, not picked from a fixed list — see below), and a typed date and time (`appointments#new`/`#create`, `resources :appointments, only: [:show, :new, :create]`), opening as a modal like appointment detail (see below). Not yet built: the day planner, client search + inline creation, the duplicate warning, and friendly clash handling (today a clash just re-renders the form with `Appointment`'s existing validation message via `shared/_errors`). The order below is the agreed target shape; what's built so far is a plain form, not this flow.
+> Status: an existing client, one or several services (picked from `Service.active`, see below), and a typed date and time (`appointments#new`/`#create`, `resources :appointments, only: [:show, :new, :create]`), opening as a modal like appointment detail (see below). Not yet built: the day planner, client search + inline creation, the duplicate warning, and friendly clash handling (today a clash just re-renders the form with `Appointment`'s existing validation message via `shared/_errors`). The order below is the agreed target shape; what's built so far is a plain form, not this flow.
 
 ## Intent
 Follow how the conversation at the desk goes: *"She wants a cut and a gloss, ideally with Melissa, sometime Wednesday."* The front desk and stylists both book, so the flow must be quick on a phone between clients too.
@@ -35,12 +35,10 @@ Consistent with [../ui/calendar-views.md](../ui/calendar-views.md)'s appointment
 
 The form itself (`app/views/appointments/_form.html.erb`) needs `data: { turbo_frame: "_top" }` on `form_with` — without it, Turbo scopes the submission response to the `modal` frame it's nested in, which is wrong for *both* outcomes: a successful `create` redirects to `root_path` (the whole calendar should update, not just the frame), and a failed one re-renders `:new` with errors (still a full page render with layout, meant to replace the whole document, not be spliced into the existing frame). "Never mind" needs the same `data: { turbo_frame: "_top" }` on its `link_to`, for the same reason — without it, cancelling would fetch `root_path` and splice only its (empty) `modal` frame back in, rather than doing a real navigation back to the calendar.
 
-## Services: typed, not picked — one catalog, no separate "custom" track
-Each service row is a single text field (`app/views/appointments/_service_line.html.erb`), not a `<select>`: `list="services-datalist"` gives autocomplete suggestions from `Service.active`, but any name can be typed. There's a required minutes field next to it (no auto-fill from the suggestion yet — see "Later" below).
+## Services: picked from the catalog, with an adjustable duration
+Each service row (`app/views/appointments/_service_line.html.erb`) is a `<select>` of `Service.active` (styled, see [../ui/design-tokens.md](../ui/design-tokens.md)'s `select_chevron`) plus a minutes field. Picking a service prefills minutes from its `default_duration_minutes` (each `<option>` carries a `data-duration`; `service_lines_controller.js#fillDuration` copies it into the row's minutes input on `change`) — still editable, for a visit that runs long or short. `AppointmentsController#service_rows` passes `service_id` and (if present) `duration_minutes` straight through to `accepts_nested_attributes_for`; `position` is computed server-side from row order, not a submitted field, so JS never needs to keep a hidden position input in sync across add/remove.
 
-On submit, `AppointmentsController#service_rows` resolves each row's typed name to a `Service`, case-insensitively: `Service.where("LOWER(name) = ?", name.downcase).first_or_create!`. A name matching an existing service (any case) reuses it; any other name creates a new one, immediately available (via the datalist) to future bookings. There is deliberately no "default" vs "custom" flag on `Service` — the catalog just grows as people type real service names, rather than being closed to whatever `db/seeds.rb` happened to seed. `position` is computed server-side from row order, not a submitted field — this sidesteps needing JavaScript to keep a hidden `position` input in sync as rows are added/removed.
-
-`AppointmentService#service_name` is a virtual `attr_accessor` (not a column) purely so the form can redisplay what was typed if the booking fails for an unrelated reason (e.g., a time clash) — the controller sets it to the resolved service's name alongside `service_id`.
+**Booking does not create services.** An earlier version let typing an unrecognized name create a new `Service` on the spot; that was deliberately reverted. Creating services — and, later, setting their prices — is planned as an admin/power-user function (a Services management page, not yet built; see "Later" in [../plans/roadmap.md](../plans/roadmap.md)'s After MVP list), not something the front desk does implicitly while booking a client.
 
 Add/remove rows and the running total are `app/javascript/controllers/service_lines_controller.js`, a standard "add fields from a `<template>`" Stimulus pattern, plus summing every visible minutes input on `input`/`connect`. The last remaining row can't be removed (`Appointment` requires at least one service regardless, but the UI also blocks it so the total never silently goes empty).
 
@@ -62,9 +60,6 @@ Add/remove rows and the running total are `app/javascript/controllers/service_li
 </div>
 ```
 
-### Later
-- Auto-fill the minutes field when a typed name exactly matches an existing service's default duration (a small addition to `service_lines_controller.js`); skipped for now to keep the row's behavior to one code path instead of "picked vs typed."
-
 ## Day planner (Turbo Frame)
 The planner reloads when the services, stylist, or date change. Before a stylist is chosen, it shows every stylist's openings for the day, so it is never an empty box. Slots are buttons carrying the time; tapping one fills the hidden `starts_at` field.
 
@@ -79,7 +74,7 @@ refresh() {
 ```
 
 ## Creating a client inline (planned; today the client must already exist)
-New clients will be created in the same transaction as the appointment, so a failed booking leaves no orphan client — the same way service creation already works (above). `AppointmentsController#create` (current code, not pasted here to avoid drifting out of sync — see the file) resolves services, builds the `Appointment`, and on an unexpected service-resolution failure (e.g., a brand-new name submitted with no minutes, bypassing the form's `required` attribute) rescues `ActiveRecord::RecordInvalid` to re-render the form with a friendly error instead of a 500. Inline client creation (wrapping the whole thing in `Appointment.transaction`, building `@appointment.client` from typed name/email/phone when no `client_id` is chosen) arrives with the client search box.
+New clients will be created in the same transaction as the appointment, so a failed booking leaves no orphan client. `AppointmentsController#create` (current code, not pasted here to avoid drifting out of sync — see the file) builds the `Appointment` from the picked `service_id`s directly; it does not create anything besides the appointment itself. Inline client creation (wrapping `create` in `Appointment.transaction`, building `@appointment.client` from typed name/email/phone when no `client_id` is chosen) arrives with the client search box.
 
 ## Rules
 - `ends_at` is derived from `starts_at` plus the total of the services (see [../scheduling/overlap-prevention.md](../scheduling/overlap-prevention.md)).
