@@ -27,7 +27,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 ## Phase 3: Booking
 - [x] **3.1 Book the simplest case.** Existing client, one service, typed time. *Done when:* a system test books and sees the card on the day view.
 - [x] **3.2 Several services.** Add and remove service rows; the total updates. *Done when:* a system test books two services and sees the combined end time.
-- [ ] **3.3 Day planner.** Open slots in a frame; tap to choose. *Done when:* a system test books by tapping a slot.
+- [x] **3.3 Day planner.** Open slots in a frame; tap to choose. *Done when:* a system test books by tapping a slot.
 - [ ] **3.4 Find or add a client.** One search box with "+ Add … as a new client". *Done when:* a system test books a brand-new client.
 - [ ] **3.5 Duplicate warning.** *Done when:* a system test sees the warning for a matching phone, then both "Use existing" and "Add as someone new" work.
 - [ ] **3.6 Kind clash errors.** *Done when:* a system test attempts a clash and reads the friendly message.

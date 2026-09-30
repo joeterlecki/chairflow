@@ -1,4 +1,4 @@
-<div class="mb-3 flex items-end gap-2" data-service-lines-target="row">
+<div class="mb-3 flex items-end gap-2" data-booking-form-target="row">
   <div class="flex-1">
     <%= line.label :service_id, "Service", class: "mb-1 block text-sm font-medium text-ink" %>
     <div class="relative">
@@ -9,7 +9,7 @@
             ),
             { prompt: true },
             class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink",
-            data: { action: "change->service-lines#fillDuration" } %>
+            data: { action: "change->booking-form#fillDuration" } %>
       <%= select_chevron %>
     </div>
   </div>
@@ -17,9 +17,9 @@
     <%= line.label :duration_minutes, "Minutes", class: "mb-1 block text-sm font-medium text-ink" %>
     <%= line.number_field :duration_minutes,
           min: 1,
-          data: { "service-lines-target": "duration", action: "input->service-lines#updateTotal" },
+          data: { "booking-form-target": "duration", action: "input->booking-form#updateTotal" },
           class: "w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink" %>
   </div>
-  <button type="button" data-action="service-lines#remove"
+  <button type="button" data-action="booking-form#remove"
           class="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink">Remove</button>
 </div>

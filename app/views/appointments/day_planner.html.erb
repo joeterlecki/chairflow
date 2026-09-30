@@ -1,0 +1,18 @@
+<%= turbo_frame_tag "day_planner" do %>
+  <% if @stylist.nil? || @minutes <= 0 %>
+    <p class="text-sm text-muted">Choose a stylist and a service to see open times.</p>
+  <% elsif @slots.empty? %>
+    <p class="text-sm text-muted">No open times for <%= @stylist.name %> that day.</p>
+  <% else %>
+    <div class="flex flex-wrap gap-2">
+      <% @slots.each do |slot| %>
+        <button type="button"
+                data-action="booking-form#choose"
+                data-planner-value="<%= slot.strftime("%Y-%m-%dT%H:%M") %>"
+                class="rounded-lg border border-line bg-surface px-3 py-1.5 text-sm text-ink hover:bg-canvas">
+          <%= slot.strftime("%-l:%M %p") %>
+        </button>
+      <% end %>
+    </div>
+  <% end %>
+<% end %>

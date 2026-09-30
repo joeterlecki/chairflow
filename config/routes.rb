@@ -9,7 +9,9 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  resources :appointments, only: [ :show, :new, :create ]
+  resources :appointments, only: [ :show, :new, :create ] do
+    get :day_planner, on: :collection
+  end
 
   root "calendar#index"
 end

@@ -1,6 +1,6 @@
 # Availability (open slots)
 
-> Status: implemented, as a plain PORO (`app/models/availability.rb`), not an `ActiveRecord::Base`. Used by nothing yet — the day planner that calls it is still planned.
+> Status: implemented, as a plain PORO (`app/models/availability.rb`), not an `ActiveRecord::Base`. Used by the booking form's day planner (`AppointmentsController#day_planner`) — see [../booking/summary.md](../booking/summary.md).
 
 `Availability` answers: *for this stylist, on this date, for this long, which start times are open?* It feeds the day planner.
 

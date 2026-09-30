@@ -1,4 +1,4 @@
-<%= form_with model: appointment, data: { turbo_frame: "_top" } do |form| %>
+<%= form_with model: appointment, data: { turbo_frame: "_top", controller: "booking-form" } do |form| %>
   <%= render "shared/errors", object: appointment %>
 
   <div class="mb-4 max-w-md">
@@ -14,35 +14,45 @@
     <%= form.label :stylist_id, "Stylist", class: "mb-1 block text-sm font-medium text-ink" %>
     <div class="relative">
       <%= form.collection_select :stylist_id, Stylist.active, :id, :name, { prompt: true },
-            class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink" %>
+            class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink",
+            data: { "booking-form-target": "stylist", action: "change->booking-form#refreshPlanner" } %>
       <%= select_chevron %>
     </div>
   </div>
 
-  <div class="mb-6 max-w-md" data-controller="service-lines">
-    <div data-service-lines-target="rows">
+  <div class="mb-6 max-w-md">
+    <div data-booking-form-target="rows">
       <%= form.fields_for :appointment_services do |line| %>
         <%= render "service_line", line: line %>
       <% end %>
     </div>
 
-    <template data-service-lines-target="template">
+    <template data-booking-form-target="template">
       <%= form.fields_for :appointment_services, AppointmentService.new, child_index: "NEW_RECORD" do |line| %>
         <%= render "service_line", line: line %>
       <% end %>
     </template>
 
     <div class="flex items-center justify-between">
-      <button type="button" data-action="service-lines#add" class="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink">
+      <button type="button" data-action="booking-form#add" class="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink">
         + Add a service
       </button>
-      <p class="text-sm text-muted">Total: <span data-service-lines-target="total">0 min</span></p>
+      <p class="text-sm text-muted">Total: <span data-booking-form-target="total">0 min</span></p>
     </div>
+  </div>
+
+  <div class="mb-6 max-w-md">
+    <p class="mb-1 text-sm font-medium text-ink">Find the right moment</p>
+    <%= turbo_frame_tag "day_planner",
+          src: day_planner_appointments_path(date: date),
+          data: { "booking-form-target": "plannerFrame" },
+          class: "block rounded-xl border border-line bg-surface px-3 py-3" %>
   </div>
 
   <div class="mb-6 max-w-md">
     <%= form.label :starts_at, "Time", class: "mb-1 block text-sm font-medium text-ink" %>
     <%= form.datetime_local_field :starts_at,
+          data: { "booking-form-target": "startsAt" },
           class: "w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink" %>
   </div>
 

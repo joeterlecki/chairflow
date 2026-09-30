@@ -44,13 +44,13 @@ class BookingTest < ApplicationSystemTestCase
         select "Noah Carter", from: "Client"
         select "Melissa", from: "Stylist"
 
-        within all("[data-service-lines-target='row']").first do
+        within all("[data-booking-form-target='row']").first do
           select "Cut & finish", from: "Service"
         end
         assert_text "45 min"
 
         click_on "+ Add a service"
-        within all("[data-service-lines-target='row']").last do
+        within all("[data-booking-form-target='row']").last do
           select "Blowout", from: "Service"
         end
         assert_text "75 min"
@@ -71,23 +71,55 @@ class BookingTest < ApplicationSystemTestCase
     end
   end
 
+  test "day planner shows a placeholder before a stylist and service are chosen" do
+    visit root_path
+    click_on "+ New appointment"
+
+    within "#day_planner" do
+      assert_text "Choose a stylist and a service to see open times."
+    end
+  end
+
+  test "books by tapping a day planner slot" do
+    travel_to Time.zone.parse("2026-10-01 08:00") do
+      visit root_path
+      click_on "+ New appointment"
+
+      within "dialog" do
+        select "Noah Carter", from: "Client"
+        select "Melissa", from: "Stylist"
+        select "Cut & finish", from: "Service" # 45 min; ava_visit already has Melissa booked 9:00-9:45 that day
+
+        within "#day_planner" do
+          assert_no_text "9:00 AM" # blocked by the existing appointment
+          click_on "9:45 AM" # the next open slot, back-to-back with it
+        end
+
+        click_on "Book appointment"
+      end
+
+      assert_no_selector "dialog"
+      assert_text "Booked. Noah Carter is in with Melissa at 9:45."
+    end
+  end
+
   test "removing a service row updates the running total" do
     visit root_path
     click_on "+ New appointment"
 
     within "dialog" do
-      within all("[data-service-lines-target='row']").first do
+      within all("[data-booking-form-target='row']").first do
         select "Cut & finish", from: "Service"
       end
       assert_text "45 min"
 
       click_on "+ Add a service"
-      within all("[data-service-lines-target='row']").last do
+      within all("[data-booking-form-target='row']").last do
         select "Blowout", from: "Service"
       end
       assert_text "75 min"
 
-      within all("[data-service-lines-target='row']").last do
+      within all("[data-booking-form-target='row']").last do
         click_on "Remove"
       end
       assert_text "45 min"
