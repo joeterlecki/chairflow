@@ -11,10 +11,22 @@ class AppointmentsController < ApplicationController
 
   # New clients are created in the same transaction as the appointment, so a
   # booking that fails for any other reason (e.g. a time clash) leaves no
-  # orphan client behind.
+  # orphan client behind. A new name that looks like an existing client (by
+  # name only -- booking never collects phone/email, see clients/summary.md)
+  # interrupts once for a gentle warning, unless the front desk already
+  # confirmed "Add as someone new".
   def create
     @appointment = Appointment.new(appointment_attributes)
     @new_client_name = new_client_name
+
+    if @appointment.client.nil? && @new_client_name.present? && !confirm_new_client?
+      @duplicates = Client.possible_duplicates_of(name: @new_client_name)
+    end
+
+    if @duplicates.present?
+      @date = @appointment.starts_at&.to_date || Date.current
+      return render :new, status: :unprocessable_entity
+    end
 
     Appointment.transaction do
       if @appointment.client.nil? && @new_client_name.present?
@@ -69,6 +81,10 @@ class AppointmentsController < ApplicationController
 
   def new_client_name
     params.dig(:appointment, :new_client_name).to_s.strip
+  end
+
+  def confirm_new_client?
+    params.dig(:appointment, :confirm_new_client) == "1"
   end
 
   def service_rows

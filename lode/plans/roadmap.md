@@ -29,7 +29,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **3.2 Several services.** Add and remove service rows; the total updates. *Done when:* a system test books two services and sees the combined end time.
 - [x] **3.3 Day planner.** Open slots in a frame; tap to choose. *Done when:* a system test books by tapping a slot.
 - [x] **3.4 Find or add a client.** One search box with "+ Add … as a new client". *Done when:* a system test books a brand-new client.
-- [ ] **3.5 Duplicate warning.** *Done when:* a system test sees the warning for a matching phone, then both "Use existing" and "Add as someone new" work.
+- [x] **3.5 Duplicate warning.** *Done when:* a system test sees the warning for a matching phone, then both "Use existing" and "Add as someone new" work. *(By matching name, not phone — booking's inline add-client flow only ever collects a name. See [../clients/summary.md](../clients/summary.md).)*
 - [ ] **3.6 Kind clash errors.** *Done when:* a system test attempts a clash and reads the friendly message.
 - [ ] **3.7 Book from the calendar.** Tap an open cell to prefill stylist and time. *Done when:* a system test does it. Revisit here: a subtle hourly tick line (cross-column time alignment, not a dense labeled grid — see [../ui/calendar-views.md](../ui/calendar-views.md)) and a current-time indicator ([../ui/calendar-views.md](../ui/calendar-views.md)'s "Later"), both about giving the empty grid space meaning, same as this task.
 

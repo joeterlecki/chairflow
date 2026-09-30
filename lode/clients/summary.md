@@ -1,6 +1,6 @@
 # Clients
 
-> Status: the model below is implemented. Booking (see [../booking/summary.md](../booking/summary.md)) can now find an existing client or create a new one inline, but doesn't call `possible_duplicates_of` yet — the duplicate warning below is still planned. Pages (index/profile/edit) are still planned.
+> Status: the model below is implemented. Booking (see [../booking/summary.md](../booking/summary.md)) finds an existing client, creates a new one inline, and now shows the duplicate warning below — by name only, since booking never collects phone/email. The Clients page doesn't exist yet, so `possible_duplicates_of`'s email/phone matching has no caller yet either. Pages (index/profile/edit) are still planned.
 
 A client is a person who gets appointments. Keep the record light: a name, optional ways to reach them, and a preferred stylist. No CRM features.
 
@@ -30,11 +30,13 @@ end
 ```
 
 ## Duplicate warning
-When a new client is added (in booking or on the Clients page) and `possible_duplicates_of` finds matches, show a gentle interruption instead of saving:
+When a new client is added (in booking; the Clients page doesn't exist yet) and `possible_duplicates_of` finds matches, `AppointmentsController#create` shows a gentle interruption instead of saving:
 
-> *Looks like Ava Thompson might already be here (same phone).* **Use Ava** · **Add as someone new**
+> *Looks like Ava Thompson might already be here.* **Use Ava Thompson** · **Add as someone new**
 
-Choosing "Add as someone new" saves anyway. Clients are **never merged**. Duplicates are an accepted cost of never blocking the desk.
+(Booking's version of this always says "might already be here" with no parenthetical reason — it only ever checks by name, since the inline "add a client" flow doesn't collect phone or email. A future page that does collect them could pass those through to `possible_duplicates_of` and be more specific about *why* it matched.)
+
+Both buttons are `type="submit"`, not links: clicking one sets the right hidden field (`client_id` for a match, `confirm_new_client` for "Add as someone new") via `booking_form_controller.js#useDuplicate`/`#confirmNewClient`, then the click's own default behavior submits the form immediately — no separate JS-triggered submit call needed. `AppointmentsController#create` skips the duplicate check entirely when `confirm_new_client` is set, so the second submission goes straight through. Choosing "Add as someone new" saves anyway. Clients are **never merged**. Duplicates are an accepted cost of never blocking the desk.
 
 ```mermaid
 flowchart LR

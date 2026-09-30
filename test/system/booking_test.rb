@@ -180,6 +180,65 @@ class BookingTest < ApplicationSystemTestCase
     end
   end
 
+  test "shows a duplicate warning when adding a client whose name matches an existing one" do
+    visit root_path
+    click_on "+ New appointment"
+
+    within "dialog" do
+      add_new_client("Ava Thompson")
+      select "Melissa", from: "Stylist"
+      select "Blowout", from: "Service"
+      fill_in "Time", with: "2026-10-02T14:00"
+      click_on "Book appointment"
+
+      assert_text "Looks like Ava Thompson might already be here."
+    end
+  end
+
+  test "Use existing resolves the duplicate warning by reusing the existing client" do
+    count_before = Client.count
+
+    visit root_path
+    click_on "+ New appointment"
+
+    within "dialog" do
+      add_new_client("Ava Thompson")
+      select "Melissa", from: "Stylist"
+      select "Blowout", from: "Service"
+      fill_in "Time", with: "2026-10-02T14:00"
+      click_on "Book appointment"
+
+      assert_text "Looks like Ava Thompson might already be here."
+      click_on "Use Ava Thompson"
+    end
+
+    assert_no_selector "dialog"
+    assert_text "Booked. Ava Thompson is in with Melissa at 2:00."
+    assert_equal count_before, Client.count
+  end
+
+  test "Add as someone new resolves the duplicate warning by creating a second client" do
+    count_before = Client.count
+
+    visit root_path
+    click_on "+ New appointment"
+
+    within "dialog" do
+      add_new_client("Ava Thompson")
+      select "Melissa", from: "Stylist"
+      select "Blowout", from: "Service"
+      fill_in "Time", with: "2026-10-02T14:00"
+      click_on "Book appointment"
+
+      assert_text "Looks like Ava Thompson might already be here."
+      click_on "Add as someone new"
+    end
+
+    assert_no_selector "dialog"
+    assert_text "Booked. Ava Thompson is in with Melissa at 2:00."
+    assert_equal count_before + 1, Client.count
+  end
+
   test "Never mind closes the new appointment dialog without booking anything" do
     visit root_path
     click_on "+ New appointment"

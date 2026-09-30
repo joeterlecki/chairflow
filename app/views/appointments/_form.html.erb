@@ -1,6 +1,28 @@
 <%= form_with model: appointment, data: { turbo_frame: "_top", controller: "booking-form" } do |form| %>
   <%= render "shared/errors", object: appointment %>
 
+  <% if duplicates.present? %>
+    <div class="mb-4 max-w-md rounded-xl border border-line bg-surface px-4 py-3 text-sm text-ink">
+      <p>Looks like <%= duplicates.map(&:name).to_sentence %> might already be here.</p>
+      <div class="mt-3 flex flex-wrap gap-2">
+        <% duplicates.each do |duplicate| %>
+          <button type="submit" formnovalidate
+                  data-action="booking-form#useDuplicate"
+                  data-client-id="<%= duplicate.id %>"
+                  data-client-name="<%= duplicate.name %>"
+                  class="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink hover:bg-canvas">
+            Use <%= duplicate.name %>
+          </button>
+        <% end %>
+        <button type="submit" formnovalidate
+                data-action="booking-form#confirmNewClient"
+                class="rounded-xl border border-line bg-surface px-3 py-2 text-sm text-ink hover:bg-canvas">
+          Add as someone new
+        </button>
+      </div>
+    </div>
+  <% end %>
+
   <div class="relative mb-4 max-w-md">
     <%= label_tag "client_query", "Client", class: "mb-1 block text-sm font-medium text-ink" %>
     <%= text_field_tag "client_query", appointment.client&.name || new_client_name,
@@ -10,6 +32,7 @@
           class: "w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink" %>
     <%= form.hidden_field :client_id, data: { "booking-form-target": "clientId" } %>
     <%= hidden_field_tag "appointment[new_client_name]", new_client_name, data: { "booking-form-target": "newClientName" } %>
+    <%= hidden_field_tag "appointment[confirm_new_client]", nil, data: { "booking-form-target": "confirmNewClient" } %>
     <%= turbo_frame_tag "client_search",
           src: client_search_appointments_path,
           data: { "booking-form-target": "clientResults", "base-url": client_search_appointments_path } %>

@@ -7,7 +7,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = [
     "rows", "template", "row", "duration", "total", "stylist", "plannerFrame", "startsAt",
-    "clientQuery", "clientId", "newClientName", "clientResults"
+    "clientQuery", "clientId", "newClientName", "clientResults", "confirmNewClient"
   ]
 
   connect() {
@@ -17,6 +17,15 @@ export default class extends Controller {
     if (this.hasPlannerFrameTarget) {
       this.plannerFrameTarget.addEventListener("turbo:before-frame-render", this.capturePlannerHeight)
       this.plannerFrameTarget.addEventListener("turbo:frame-render", this.animatePlannerHeight)
+
+      // A redisplay after a validation error or the duplicate warning can
+      // already have a stylist/services chosen -- without this, the planner
+      // would show its "choose a stylist" placeholder despite both already
+      // being set, until the next change event. plannerInitialized is still
+      // false at this point, so this doesn't trigger the height animation.
+      if (this.hasStylistTarget && this.stylistTarget.value && this.totalMinutes() > 0) {
+        this.refreshPlanner()
+      }
     }
   }
 
@@ -100,6 +109,20 @@ export default class extends Controller {
     this.newClientNameTarget.value = event.currentTarget.dataset.clientName
     this.clientQueryTarget.value = event.currentTarget.dataset.clientName
     this.clientResultsTarget.innerHTML = ""
+  }
+
+  // The duplicate-warning panel's two resolutions: pick one of the matches
+  // (same as a normal search choice), or confirm adding the typed name
+  // anyway. Both buttons are type="submit", so setting the field then
+  // returning lets the form submit immediately -- one click each.
+  useDuplicate(event) {
+    this.clientIdTarget.value = event.currentTarget.dataset.clientId
+    this.newClientNameTarget.value = ""
+    this.clientQueryTarget.value = event.currentTarget.dataset.clientName
+  }
+
+  confirmNewClient(event) {
+    this.confirmNewClientTarget.value = "1"
   }
 
   totalMinutes() {
