@@ -1,6 +1,6 @@
 # Booking flow
 
-> Status: planned, not yet implemented. The order is the agreed starting point; adjust it if it doesn't flow well in practice.
+> Status: the simplest case is implemented — an existing client, one service, a typed date and time (`appointments#new`/`#create`, `resources :appointments, only: [:show, :new, :create]`). Not yet built: several services (add/remove rows), the day planner, client search + inline creation, the duplicate warning, and friendly clash handling (today a clash just re-renders the form with `Appointment`'s existing validation message via `shared/_errors`). The order below is the agreed target shape; what's built so far is a plain form, not this flow.
 
 ## Intent
 Follow how the conversation at the desk goes: *"She wants a cut and a gloss, ideally with Melissa, sometime Wednesday."* The front desk and stylists both book, so the flow must be quick on a phone between clients too.
@@ -31,7 +31,9 @@ flowchart TD
 ```
 
 ## Services as nested fields
-Services are `appointment_services` nested attributes. A small Stimulus controller adds and removes rows from a `<template>`, a standard Rails pattern with no gem needed.
+Services are `appointment_services` nested attributes (`form.fields_for :appointment_services`, matching `Appointment#accepts_nested_attributes_for`). Today `app/views/appointments/_form.html.erb` renders exactly one line (`@appointment.appointment_services.build` in `new`, with `position` hardcoded to `1` in a hidden field) — client, stylist, and service are all plain styled `collection_select`s (see [../ui/design-tokens.md](../ui/design-tokens.md) for `select_chevron`), and the moment is one `datetime_local_field` the front desk types into directly. Add/remove rows, below, is still planned.
+
+A small Stimulus controller will add and remove rows from a `<template>`, a standard Rails pattern with no gem needed.
 
 ```erb
 <%# app/views/appointments/_form.html.erb (excerpt) %>
@@ -62,23 +64,22 @@ refresh() {
 }
 ```
 
-## Creating a client inline
-New clients are created in the same transaction as the appointment, so a failed booking leaves no orphan client.
+## Creating a client inline (planned; today the client must already exist)
+New clients will be created in the same transaction as the appointment, so a failed booking leaves no orphan client. The current `create` (below) is the subset of this that exists now:
 
 ```ruby
-# app/controllers/appointments_controller.rb (excerpt)
+# app/controllers/appointments_controller.rb (current)
 def create
   @appointment = Appointment.new(appointment_params)
-  Appointment.transaction do
-    @appointment.client ||= Client.create!(new_client_params) if new_client_params[:name].present?
-    @appointment.save!
+  if @appointment.save
+    redirect_to root_path(date: @appointment.starts_at.to_date),
+      notice: "Booked. #{@appointment.client.name} is in with #{@appointment.stylist.name} at #{@appointment.starts_at.strftime('%-l:%M')}."
+  else
+    render :new, status: :unprocessable_entity
   end
-  redirect_to calendar_path(date: @appointment.starts_at.to_date),
-              notice: "Booked. #{@appointment.client.name} is in with #{@appointment.stylist.name} at #{@appointment.starts_at.strftime('%-l:%M')}."
-rescue ActiveRecord::RecordInvalid
-  render :new, status: :unprocessable_entity
 end
 ```
+Inline client creation (wrapping the above in `Appointment.transaction`, building `@appointment.client` from `new_client_params` when no `client_id` is chosen) arrives with the client search box.
 
 ## Rules
 - `ends_at` is derived from `starts_at` plus the total of the services (see [../scheduling/overlap-prevention.md](../scheduling/overlap-prevention.md)).

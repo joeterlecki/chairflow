@@ -16,7 +16,9 @@ class Appointment < ApplicationRecord
   validate :stylist_is_free, if: -> { booked? && stylist && starts_at && ends_at }
 
   def duration
-    appointment_services.reject(&:marked_for_destruction?).sum(&:duration_minutes).minutes
+    appointment_services.reject(&:marked_for_destruction?)
+      .sum { |line| line.duration_minutes || line.service&.default_duration_minutes || 0 }
+      .minutes
   end
 
   private

@@ -58,5 +58,5 @@ flowchart LR
 - Cards: `rounded-2xl bg-surface border border-line`. Buttons: `rounded-xl`. Appointment cards: `rounded-lg` with a 3px left border in the swatch edge color.
 - Type: the system font stack (Tailwind's default `font-sans`): San Francisco on Apple devices, Segoe UI on Windows, Roboto on Android. It loads instantly and feels native; a custom typeface can be revisited after the MVP. Headlines use `tracking-tight`; eyebrows use `uppercase tracking-[0.25em] text-xs`.
 - Primary button: `bg-pine text-white hover:bg-pine-hover`. Secondary: `border border-line bg-surface`.
-- Styled selects: `appearance-none` plus a custom chevron. Never ship the browser default next to styled inputs.
+- Styled selects: `appearance-none` plus a custom chevron. Never ship the browser default next to styled inputs. Implemented as `ApplicationHelper#select_chevron` (an inline SVG, absolutely positioned inside a `relative` wrapper around the `collection_select`) — see `app/views/appointments/_form.html.erb` for the pattern to repeat on any future select.
 - Color never carries meaning alone: every swatch also appears next to the stylist's name.

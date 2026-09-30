@@ -22,6 +22,17 @@ class AppointmentTest < ActiveSupport::TestCase
     assert_equal starts_at + 75.minutes, appointment.ends_at
   end
 
+  test "derives ends_at when a service's duration_minutes isn't set yet" do
+    # AppointmentService defaults duration_minutes from its service in its own before_validation,
+    # which runs after Appointment's derive_ends_at -- duration must not assume it's already there
+    # (this is exactly what happens via nested attributes from the booking form: service_id only).
+    appointment = Appointment.new(client: clients(:ava), stylist: stylists(:melissa), starts_at: starts_at)
+    appointment.appointment_services.build(service: services(:cut_and_finish), position: 1)
+
+    assert appointment.valid?
+    assert_equal starts_at + services(:cut_and_finish).default_duration_minutes.minutes, appointment.ends_at
+  end
+
   test "requires at least one service" do
     appointment = Appointment.new(client: clients(:ava), stylist: stylists(:melissa), starts_at: starts_at)
 

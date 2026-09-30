@@ -1,0 +1,44 @@
+<%= form_with model: appointment do |form| %>
+  <%= render "shared/errors", object: appointment %>
+
+  <div class="mb-4 max-w-md">
+    <%= form.label :client_id, "Client", class: "mb-1 block text-sm font-medium text-ink" %>
+    <div class="relative">
+      <%= form.collection_select :client_id, Client.alphabetical, :id, :name, { prompt: true },
+            class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink" %>
+      <%= select_chevron %>
+    </div>
+  </div>
+
+  <div class="mb-4 max-w-md">
+    <%= form.label :stylist_id, "Stylist", class: "mb-1 block text-sm font-medium text-ink" %>
+    <div class="relative">
+      <%= form.collection_select :stylist_id, Stylist.active, :id, :name, { prompt: true },
+            class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink" %>
+      <%= select_chevron %>
+    </div>
+  </div>
+
+  <%= form.fields_for :appointment_services do |line| %>
+    <div class="mb-4 max-w-md">
+      <%= line.label :service_id, "Service", class: "mb-1 block text-sm font-medium text-ink" %>
+      <div class="relative">
+        <%= line.collection_select :service_id, Service.active, :id, :name, { prompt: true },
+              class: "w-full appearance-none rounded-xl border border-line bg-surface px-3 py-2 pr-8 text-ink" %>
+        <%= select_chevron %>
+      </div>
+      <%= line.hidden_field :position, value: 1 %>
+    </div>
+  <% end %>
+
+  <div class="mb-6 max-w-md">
+    <%= form.label :starts_at, "Time", class: "mb-1 block text-sm font-medium text-ink" %>
+    <%= form.datetime_local_field :starts_at,
+          class: "w-full rounded-xl border border-line bg-surface px-3 py-2 text-ink" %>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <%= form.submit "Book appointment", class: "rounded-xl bg-pine px-4 py-2 text-white hover:bg-pine-hover" %>
+    <%= link_to "Never mind", root_path, class: "rounded-xl border border-line bg-surface px-4 py-2 text-ink" %>
+  </div>
+<% end %>

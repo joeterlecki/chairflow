@@ -14,7 +14,10 @@
     <%= link_to "Today", root_path, class: "rounded-lg border border-line bg-surface px-3 py-1.5 text-sm hover:bg-canvas" %>
     <p class="text-lg font-medium text-ink"><%= @date.strftime("%A, %B %-d") %></p>
   </div>
-  <p class="text-sm text-muted"><%= pluralize(@appointments.count, "appointment") %></p>
+  <div class="flex items-center gap-4">
+    <p class="text-sm text-muted"><%= pluralize(@appointments.count, "appointment") %></p>
+    <%= link_to "+ New appointment", new_appointment_path, class: "rounded-lg bg-pine px-3 py-1.5 text-sm text-white hover:bg-pine-hover" %>
+  </div>
 </div>
 
 <% if @window.nil? %>

@@ -44,7 +44,11 @@ create_table :appointment_services do |t|
 end
 ```
 
-`ends_at` is stored so overlap queries stay simple and indexable. `Appointment#derive_ends_at` (a `before_validation`) sets it to `starts_at + duration`, where `duration` sums the (non-destroyed) `appointment_services`' `duration_minutes`; it is never typed by hand. An appointment with no services is invalid (`has_a_service`, error on `:base`). `AppointmentService#duration_minutes` defaults from `service.default_duration_minutes` when left blank, and can be overridden per visit. `Appointment.status` is an enum (`booked` default, `cancelled`); overlap prevention for `booked` appointments (`scope :overlapping`, `stylist_is_free`) is implemented, see [overlap-prevention.md](overlap-prevention.md).
+`ends_at` is stored so overlap queries stay simple and indexable. `Appointment#derive_ends_at` (a `before_validation`) sets it to `starts_at + duration`, where `duration` sums the (non-destroyed) `appointment_services`' effective duration; it is never typed by hand. An appointment with no services is invalid (`has_a_service`, error on `:base`). `AppointmentService#duration_minutes` defaults from `service.default_duration_minutes` when left blank, and can be overridden per visit.
+
+**Invariant:** `Appointment#duration` reads each line's `duration_minutes || service.default_duration_minutes`, not just `duration_minutes`. Nested attributes built from a form (service chosen, no explicit duration) only get their own `duration_minutes` default applied by `AppointmentService`'s *own* `before_validation` — which runs later than `Appointment`'s `derive_ends_at`, during the child's autosave validation. If `duration` trusted `duration_minutes` alone, booking a plain service (the common case) would raise `TypeError: nil can't be coerced into Integer`.
+
+`Appointment.status` is an enum (`booked` default, `cancelled`); overlap prevention for `booked` appointments (`scope :overlapping`, `stylist_is_free`) is implemented, see [overlap-prevention.md](overlap-prevention.md).
 
 ```mermaid
 flowchart TD

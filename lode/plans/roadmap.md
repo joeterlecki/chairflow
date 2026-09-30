@@ -25,7 +25,7 @@ MVP = the normal business flows: **see the day, book, edit/reschedule, cancel, f
 - [x] **2.5 Appointment detail.** Dialog in the modal frame. *Done when:* a system test opens a card and sees the client, services, and time.
 
 ## Phase 3: Booking
-- [ ] **3.1 Book the simplest case.** Existing client, one service, typed time. *Done when:* a system test books and sees the card on the day view.
+- [x] **3.1 Book the simplest case.** Existing client, one service, typed time. *Done when:* a system test books and sees the card on the day view.
 - [ ] **3.2 Several services.** Add and remove service rows; the total updates. *Done when:* a system test books two services and sees the combined end time.
 - [ ] **3.3 Day planner.** Open slots in a frame; tap to choose. *Done when:* a system test books by tapping a slot.
 - [ ] **3.4 Find or add a client.** One search box with "+ Add … as a new client". *Done when:* a system test books a brand-new client.
